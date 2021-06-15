@@ -1,0 +1,96 @@
+{
+    "latitude" : 48,
+    "longitude" : -71,
+    "nbLeds" : 60,
+    "clockwise" : 1,
+    "bodies" : [
+	{
+	    "name" : "Sun",
+	    "horizonNumber" : 10,
+	    "scope" : 2,
+	    "r" : 255,
+	    "g" : 255,
+	    "b" : 255
+	},
+	{
+	    "name" : "Moon",
+	    "horizonNumber" : 301,
+	    "scope" : 1,
+	    "r" : 155,
+	    "g" : 0,
+	    "b" : 255
+	},
+	{
+	    "name" : "ISS",
+	    "apiURL" : "http://api.open-notify.org/iss-now.json",
+	    "scope" : 1,
+	    "r" : 0,
+	    "g" : 255,
+	    "b" : 0
+	},
+	{
+	    "name" : "Mercury",
+	    "horizonNumber" : 199,
+	    "scope" : 0,
+	    "r" : 153,
+	    "g" : 100,
+	    "b" : 50
+	},
+	{
+	    "name" : "Venus",
+	    "horizonNumber" : 299,
+	    "scope" : 1,
+	    "r" : 255,
+	    "g" : 255,
+	    "b" : 0
+	},
+	{
+	    "name" : "Mars",
+	    "horizonNumber" : 499,
+	    "scope" : 1,
+	    "r" : 255,
+	    "g" : 0,
+	    "b" : 0
+	},
+	{
+	    "name" : "Jupiter",
+	    "horizonNumber" : 599,
+	    "scope" : 0,
+	    "r" : 199,
+	    "g" : 173,
+	    "b" : 151
+	},
+	{
+	    "name" : "Saturn",
+	    "horizonNumber" : 699,
+	    "scope" : 0,
+	    "r" : 252,
+	    "g" : 221,
+	    "b" : 166
+	},
+	{
+	    "name" : "Uranus",
+	    "horizonNumber" : 799,
+	    "scope" : 0,
+	    "r" : 153,
+	    "g" : 219,
+	    "b" : 245
+	},
+	{
+	    "name" : "Neptune",
+	    "horizonNumber" : 899,
+	    "scope" : 0,
+	    "r" : 95,
+	    "g" : 105,
+	    "b" : 254
+	},
+	{
+	    "name" : "Pluto",
+	    "horizonNumber" : 999,
+	    "scope" : 0,
+	    "r" : 153,
+	    "g" : 76,
+	    "b" : 0
+	}
+    ]
+}
