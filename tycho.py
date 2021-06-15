@@ -64,23 +64,25 @@ def loadHorizonFile(body, latitude, longitude, date):
            'QUANTITIES=\'10\'&' + 
            'R_T_S_ONLY=\'TVH\'')
     print(url)
-    response = requests.get(url)
-    lines = response.text.split('\n')
-    f = open(horizonFileName(body = body,
-                             latitude = latitude, longitude = longitude,
-                             date = date), 'w')
-    
-    began = False
-    read = False
-    for line in lines :
-        if began : read = True
-        if beginning in line : began = True
-        if ending in line :
-            read = False
-            began = False
-        if read:
-            f.write(line + '\n')
-
+    try :
+        response = requests.get(url)
+        lines = response.text.split('\n')
+        f = open(horizonFileName(body = body,
+                                 latitude = latitude, longitude = longitude,
+                                 date = date), 'w')
+        
+        began = False
+        read = False
+        for line in lines :
+            if began : read = True
+            if beginning in line : began = True
+            if ending in line :
+                read = False
+                began = False
+            if read:
+                f.write(line + '\n')
+    except Exception as e :
+        print ('Erreur JPL Horizon')
 
             
 def loadISSAPI():
@@ -89,7 +91,7 @@ def loadISSAPI():
     params = json.loads(response.text)
     lat = params['iss_position']['latitude']
     lon = params['iss_position']['longitude']
-    return (lat, lon)
+    return (lat, lon)    
     
 def readHorizonFile(body, latitude, longitude, date) :
     bodyStates = {}

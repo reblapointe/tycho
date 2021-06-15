@@ -44,7 +44,7 @@ for b in bodies :
 
 for b in bodies :
     for i in range(0, nbTicks) :
-        b['led'][i] = 1
+        b['led'][i] = 0
         
 tickMinutes = 24 * 60 / nbTicks # in minutes
 
@@ -126,8 +126,11 @@ def loop() :
                     ticks = nbTicks,
                     date = datetime.datetime.utcnow())
         if showISS :
-            (latISS, lonISS) = tycho.loadISSAPI()
-            writeISS(latISS, lonISS)
+            try : 
+                (latISS, lonISS) = tycho.loadISSAPI()
+                writeISS(latISS, lonISS)
+            except Exception as e :
+                print ('Erreur ISS')
         writeStateOfLights(date = datetime.datetime.now())
         couleursJson = json.dumps(bodies)
         #print(couleursJson)
