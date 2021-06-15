@@ -1,7 +1,8 @@
 import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
 
-broker = '192.168.1.139'
+broker = '192.168.1.133'
 port = 1883
+
 
 #Start broker : mosquitto -d
 #View topic :
@@ -11,7 +12,7 @@ port = 1883
 def on_publish(client, userdata, result):
     print(userdata)
 
-client = paho.Client('control')
+client = paho.Client()
 client.on_publish = on_publish
 client.connect(broker, port)
 
