@@ -15,7 +15,7 @@
 	{
 	    "name" : "Moon",
 	    "horizonNumber" : 301,
-	    "scope" : 1,
+	    "scope" : 2,
 	    "r" : 155,
 	    "g" : 0,
 	    "b" : 255
