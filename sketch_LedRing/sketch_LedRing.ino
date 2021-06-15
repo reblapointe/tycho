@@ -13,8 +13,8 @@
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 const char* ssid = "SSID";
-const char* password =  "****";
-const char* mqttServer = "192.168.1.139";
+const char* password =  "*****";
+const char* mqttServer = "192.168.1.***";
 const int mqttPort = 1883;
 
 struct body{
@@ -42,7 +42,7 @@ void printBody(body b){
   Serial.println();
 }   
 
-DynamicJsonDocument doc(6144);
+DynamicJsonDocument doc(20000);
 
 body* bodies;
 int nbBodies;
@@ -53,7 +53,7 @@ void parseJsonBodies()
 {
   //JsonArray bodiesJson = doc[0];
   nbBodies = doc.size();
-  bodies = (body*) malloc(nbBodies*sizeof(body));
+  bodies = (body*) malloc(nbBodies * sizeof(body));
   for(int i = 0; i < nbBodies; i++)
   {
     JsonObject o = doc[i];
@@ -98,8 +98,11 @@ void setup() {
     Serial.println("Connecting to WiFi..");
   }
   Serial.println("Connected to the WiFi network");
+  
+  strip.setPixelColor(0, strip.Color(255, 255, 255));
+  strip.show();
 
-  client.setBufferSize(6144);
+  client.setBufferSize(20000);
   client.setServer(mqttServer, mqttPort);
   client.setCallback(callback);
  
@@ -121,6 +124,9 @@ void setup() {
 
   client.subscribe("tycho/60"); 
   client.setCallback(callback);
+  
+  strip.setPixelColor(1, strip.Color(255, 255, 255));
+  strip.show();
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
