@@ -12,9 +12,9 @@
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-const char* ssid = "SSID";
-const char* password =  "*****";
-const char* mqttServer = "192.168.1.***";
+const char* ssid = "SSID***";
+const char* password =  "****";
+const char* mqttServer = "192.168.1.133";
 const int mqttPort = 1883;
 
 struct body{
@@ -134,10 +134,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived in topic: ");
   Serial.println(topic);
  
-  Serial.print("Message:");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
+//  Serial.print("Message:");
+//  for (int i = 0; i < length; i++) {
+//    Serial.print((char)payload[i]);
+//  }
  
   Serial.println();
   Serial.println("-----------------------");
@@ -160,7 +160,12 @@ void loop() {
   if (millis() - elapsed > REFRESH_RATE)
   {
     elapsed = millis();
-  
+    if (WiFi.status() != WL_CONNECTED)
+    {
+      Serial.println("Reconnecting to Wifi...");
+      WiFi.disconnect();
+      WiFi.reconnect();  
+    }
     for(int i = 0; i < strip.numPixels(); i++) 
     {
       int r = 0, g = 0, b = 0;
