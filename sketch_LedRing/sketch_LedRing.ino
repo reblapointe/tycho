@@ -10,6 +10,7 @@
 
 
 
+
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 const char* ssid = "SSID***";
@@ -104,6 +105,7 @@ void setup() {
 
   client.setBufferSize(20000);
   client.setServer(mqttServer, mqttPort);
+  client.setKeepAlive(3600);
   client.setCallback(callback);
  
   while (!client.connected()) 
@@ -163,6 +165,8 @@ void loop() {
     if (WiFi.status() != WL_CONNECTED)
     {
       Serial.println("Reconnecting to Wifi...");
+      strip.setPixelColor(0, strip.Color(255, 127, 0));
+      strip.show();
       WiFi.disconnect();
       WiFi.reconnect();  
     }

@@ -14,7 +14,7 @@ def on_publish(client, userdata, result):
 
 client = paho.Client()
 client.on_publish = on_publish
-client.connect(broker, port)
+client.connect(broker, port, 3600)
 
 def publish(s:str) :
     ret = client.publish('tycho/60', s, retain = True)
