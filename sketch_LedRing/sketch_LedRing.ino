@@ -8,13 +8,10 @@
 #define LED_PIN 3
 #define REFRESH_RATE 1000
 
-
-
-
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-const char* ssid = "SSID***";
-const char* password =  "****";
+const char* ssid = "SSID";
+const char* password =  "*****";
 const char* mqttServer = "192.168.1.133";
 const int mqttPort = 1883;
 
@@ -92,11 +89,15 @@ void setup() {
 
  
   WiFi.begin(ssid, password);
- 
+  int essais = 0;
   while (WiFi.status() != WL_CONNECTED) 
   {
-    delay(500);
+    delay(1000);
     Serial.println("Connecting to WiFi..");
+    if (++essais == 10){
+      Serial.println("Restart");
+      ESP.restart();
+    }
   }
   Serial.println("Connected to the WiFi network");
   
@@ -165,10 +166,7 @@ void loop() {
     if (WiFi.status() != WL_CONNECTED)
     {
       Serial.println("Reconnecting to Wifi...");
-      strip.setPixelColor(0, strip.Color(255, 127, 0));
-      strip.show();
-      WiFi.disconnect();
-      WiFi.reconnect();  
+      ESP.restart();
     }
     for(int i = 0; i < strip.numPixels(); i++) 
     {
