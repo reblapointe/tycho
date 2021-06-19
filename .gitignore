@@ -2,6 +2,7 @@ __pycache__/
 horizonFiles/*
 !horizonFiles/body10lat48long79date2021-05-20.txt
 sketch_LedRing/wifiParams.h
+sketch_LedRing/private*
 *~
 \#*\#
 '*scratch*'
