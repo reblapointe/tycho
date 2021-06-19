@@ -27,27 +27,40 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-struct body{
+struct Body{
   const char* bname;
   int r, g, b;
   int scope;
   int led[LED_COUNT];
 };
 
-struct bodiesList{
-  body* bodies;
+struct BodiesList{
+  Body* bodies;
   int nbBodies;
 };
 
-void printBody(body b){
-  Serial.println(b.bname);
-  Serial.print("R");
+BodiesList constructBodiesList(int nbBodies)
+{
+  BodiesList list;
+  list.nbBodies = nbBodies;
+  list.bodies = new Body[list.nbBodies];
+  return list;
+}
+
+void destructBodiesList(BodiesList list)
+{
+  delete[] list.bodies;
+}
+
+void printBody(Body b){
+  Serial.print(b.bname);
+  Serial.print(" R");
   Serial.print(b.r);
   Serial.print(" G");
   Serial.print(b.g);
   Serial.print(" B");
   Serial.print(b.b);
-  Serial.print(" Scope");
+  Serial.print(" Scope ");
   Serial.print(b.scope);
   Serial.println();
   for (int i = 0 ; i < LED_COUNT; i++){
@@ -57,9 +70,9 @@ void printBody(body b){
   Serial.println();
 }   
 
-void showBodiesOnPixelStrip(bodiesList list)
+void showBodiesOnPixelStrip(BodiesList list)
 {  
-  for(int i = 0; i < strip.numPixels(); i++) 
+  for(int i = 0; i < LED_COUNT; i++) 
   {
     int r = 0, g = 0, b = 0;
     for (int body = 0; body < list.nbBodies; body++)
@@ -86,11 +99,8 @@ void showBodiesOnPixelStrip(bodiesList list)
   strip.show();
 }
 
-bodiesList readBodies(DynamicJsonDocument doc)
+void loadBodies(BodiesList list, DynamicJsonDocument doc)
 {
-  bodiesList list;
-  list.nbBodies = doc.size();
-  list.bodies = new body[list.nbBodies]; // Pas oublier delete
   for(int i = 0; i < list.nbBodies; i++)
   {
     JsonObject o = doc[i];
@@ -105,7 +115,6 @@ bodiesList readBodies(DynamicJsonDocument doc)
       list.bodies[i].led[j] = ledsJson[std::to_string(j)];
     printBody(list.bodies[i]);
   }
-  return list;
 }
 
 void connectToWifi()
@@ -171,10 +180,11 @@ void callbackNewMQTTMessage(char* topic, byte* payload, unsigned int length)
     Serial.println(error.f_str());
   }
   else
-  {   
-    bodiesList l = readBodies(doc);
+  {
+    BodiesList l = constructBodiesList(doc.size());
+    loadBodies(l, doc);
     showBodiesOnPixelStrip(l);
-    delete [] l.bodies; // delete
+    destructBodiesList(l);
   }
 }
 
