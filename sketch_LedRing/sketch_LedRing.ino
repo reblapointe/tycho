@@ -5,11 +5,16 @@
 #include <string>
 
 #include "wifiParams.h"
-/* wifiParams.sets SSID, PASSWORD, MQTT_SERVER and MQTT_PORT
- * #define SSID "Your ssid"
- * #define PASSWORD "Your wifi password"
- * #define MQTT_SEVER "192.168.1.133" 
- * #define MQTT_PORT 1883
+/* wifiParams defines SSID, PASSWORD, MQTT_SERVER and MQTT_PORT
+ *  #ifndef WIFI_PARAMS_H
+ *  #define WIFI_PARAMS_H
+ *  
+ *  #define SSID "Your ssid"
+ *  #define PASSWORD "Your wifi password"
+ *  #define MQTT_SEVER "192.168.1.133" 
+ *  #define MQTT_PORT 1883
+ *  
+ *  #endif
 */
 
 #define LED_COUNT 60
@@ -19,11 +24,8 @@
 #define MAX_MQTT_MESSAGE_LENGTH 20000
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
-DynamicJsonDocument doc(MAX_MQTT_MESSAGE_LENGTH);
 WiFiClient espClient;
 PubSubClient client(espClient);
-
-int elapsed = 0;
 
 struct body{
   const char* bname;
@@ -32,8 +34,10 @@ struct body{
   int led[LED_COUNT];
 };
 
-body* bodies;
-int nbBodies;
+struct bodiesList{
+  body* bodies;
+  int nbBodies;
+};
 
 void printBody(body b){
   Serial.println(b.bname);
@@ -53,25 +57,57 @@ void printBody(body b){
   Serial.println();
 }   
 
-void parseJsonBodies()
+void showBodiesOnPixelStrip(bodiesList list)
+{  
+  for(int i = 0; i < strip.numPixels(); i++) 
+  {
+    int r = 0, g = 0, b = 0;
+    for (int body = 0; body < list.nbBodies; body++)
+    {
+      if (list.bodies[body].scope == 2 && list.bodies[body].led[i] == 1)
+      {
+        r += (list.bodies[body].r / 5) % 256;
+        g += (list.bodies[body].g / 5) % 256;
+        b += (list.bodies[body].b / 5) % 256;
+      }
+    }
+
+    for (int body = 0; body < list.nbBodies; body++)
+    {
+      if (list.bodies[body].led[i] == 2)
+      {
+         r = list.bodies[body].r; 
+         g = list.bodies[body].g;
+         b = list.bodies[body].b;
+      }
+    }
+    strip.setPixelColor(i, strip.Color(r, g, b));
+  }
+  strip.show();
+}
+
+bodiesList readBodies(DynamicJsonDocument doc)
 {
-  nbBodies = doc.size();
-  bodies = (body*) malloc(nbBodies * sizeof(body));
-  for(int i = 0; i < nbBodies; i++)
+  bodiesList list;
+  list.nbBodies = doc.size();
+  list.bodies = new body[list.nbBodies]; // Pas oublier delete
+  for(int i = 0; i < list.nbBodies; i++)
   {
     JsonObject o = doc[i];
-    bodies[i].bname = o["name"];
-    bodies[i].r = o["r"]; 
-    bodies[i].g = o["g"]; 
-    bodies[i].b = o["b"]; 
-    bodies[i].scope = o["scope"]; 
+    list.bodies[i].bname = o["name"];
+    list.bodies[i].r = o["r"]; 
+    list.bodies[i].g = o["g"]; 
+    list.bodies[i].b = o["b"]; 
+    list.bodies[i].scope = o["scope"]; 
     JsonObject ledsJson = o["led"];
     
     for (int j = 0; j < LED_COUNT; j++) 
-        bodies[i].led[j] = ledsJson[std::to_string(j)];
-    printBody(bodies[i]);
+      list.bodies[i].led[j] = ledsJson[std::to_string(j)];
+    printBody(list.bodies[i]);
   }
+  return list;
 }
+
 void connectToWifi()
 {  
   WiFi.begin(SSID, PASSWORD);
@@ -87,6 +123,15 @@ void connectToWifi()
     }
   }
   Serial.println("Connected to the WiFi network");
+}
+
+void checkWifi()
+{
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.println("Lost Wifi connection. Restarting ESP....");
+    ESP.restart();
+  }
 }
 
 void connectToMQTT()
@@ -111,12 +156,25 @@ void connectToMQTT()
   client.setCallback(callbackNewMQTTMessage);
 }
 
-void checkWifi()
+void callbackNewMQTTMessage(char* topic, byte* payload, unsigned int length) 
 {
-  if (WiFi.status() != WL_CONNECTED)
+  Serial.print("Message arrived in topic: ");
+  Serial.println(topic);
+  Serial.println();
+  Serial.println("-----------------------");
+
+  DynamicJsonDocument doc(MAX_MQTT_MESSAGE_LENGTH);
+  DeserializationError error = deserializeJson(doc, payload);
+  if (error)
   {
-    Serial.println("Lost Wifi connection. Restarting ESP....");
-    ESP.restart();
+    Serial.print(F("deserializeJson() failed: "));
+    Serial.println(error.f_str());
+  }
+  else
+  {   
+    bodiesList l = readBodies(doc);
+    showBodiesOnPixelStrip(l);
+    delete [] l.bodies; // delete
   }
 }
 
@@ -139,55 +197,15 @@ void setup()
   strip.show();
 }
 
-void callbackNewMQTTMessage(char* topic, byte* payload, unsigned int length) 
+int elapsed = 0;
+
+void loop() 
 {
-  Serial.print("Message arrived in topic: ");
-  Serial.println(topic);
-  Serial.println();
-  Serial.println("-----------------------");
-
-  DeserializationError error = deserializeJson(doc, payload);
-  if (error)
-  {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(error.f_str());
-  }
-  else
-    parseJsonBodies();
-}
-
-void loop() {
-  client.loop();
+  client.loop(); // MQTT
 
   if (millis() - elapsed > REFRESH_RATE)
   {
     elapsed = millis();
     checkWifi();
-    
-    for(int i = 0; i < strip.numPixels(); i++) 
-    {
-      int r = 0, g = 0, b = 0;
-      for (int body = 0; body < nbBodies; body++)
-      {
-        if (bodies[body].scope == 2 && bodies[body].led[i] == 1)
-        {
-          r += (bodies[body].r / 5) % 256;
-          g += (bodies[body].g / 5) % 256;
-          b += (bodies[body].b / 5) % 256;
-        }
-      }
-
-      for (int body = 0; body < nbBodies; body++)
-      {
-        if (bodies[body].led[i] == 2)
-        {
-           r = bodies[body].r; 
-           g = bodies[body].g;
-           b = bodies[body].b;
-        }
-      }
-      strip.setPixelColor(i, strip.Color(r, g, b));
-    }
-    strip.show();
   }
 }
