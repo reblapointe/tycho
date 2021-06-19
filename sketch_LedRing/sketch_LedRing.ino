@@ -16,9 +16,10 @@
 #define LED_PIN 3
 #define REFRESH_RATE 1000
 #define TOPIC "tycho/60" // MQTT Topic
+#define MAX_MQTT_MESSAGE_LENGTH 20000
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
-DynamicJsonDocument doc(20000);
+DynamicJsonDocument doc(MAX_MQTT_MESSAGE_LENGTH);
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -90,7 +91,7 @@ void connectToWifi()
 
 void connectToMQTT()
 {
-  client.setBufferSize(20000);
+  client.setBufferSize(MAX_MQTT_MESSAGE_LENGTH);
   client.setServer(MQTT_SERVER, MQTT_PORT);
   client.setKeepAlive(3600);
  
