@@ -12,9 +12,7 @@ transits = 't'
 maxi = 2
 off = 0
 on = 1
-
-#def removeMultipleTransits(
-        
+  
 def readHorizonDateTime(s) :
     return datetime.datetime.strptime(s, '%Y-%b-%d %H:%M')
 
@@ -87,7 +85,24 @@ def loadHorizonFile(body, latitude, longitude, date):
     except Exception as e :
         print ('Erreur JPL Horizon')
 
-            
+
+def isBetweenLongitudes(l, a, b) :
+    return a <= l <= b or l <= b <= a or b <= a <= l
+    
+def capLongitude(l) :
+    if l < -180 : return l + 360
+    if l > 180 : return l - 360
+    return l;
+    
+def printLongitudes(nbTicks, lat, lon, pole = -1) :
+    delta = 360 / nbTicks / 2
+    for i in rangeFromPole(0, nbTicks, pole) :
+        actuelle = float(lon) + i * 360 / nbTicks
+        precedente = capLongitude(int(actuelle - delta))
+        suivante = capLongitude(int(actuelle + delta))
+        print(str(precedente) + '->' + str(suivante), end = ',')
+    print()
+                
 def loadISSAPI():
     url = 'http://api.open-notify.org/iss-now.json'
     response = requests.get(url)
@@ -150,15 +165,36 @@ def bodyVisibility(body,
     return(visibility)
 
 def bodyVisibilityAroundEarth(body, longitude, latitude,
-                              ticks, date = datetime.datetime.utcnow() ) :
+                              ticks, date = datetime.datetime.utcnow(), pole = -1) :
     visibilities = {}
-    for i in range(0, ticks):
-        nextLong = longitude - int((360 / ticks * i))
-        if nextLong < -180 : nextLong += 360
+    for i in rangeFromPole(0, ticks, pole) :
+        nextLong = longitude + int((360 / ticks * i))
+        if nextLong > 180 : nextLong -= 360
         visibilities[i] = bodyVisibility(body = body,
                                          longitude = nextLong,
                                          latitude = latitude,
                                          ticks = ticks,
                                          date = date)
-    
+    return visibilities
+
+def rangeFromPole(start, end, pole) :
+    return range(end, start, -1) if pole == -1 else range(start, end) 
+
+def issVisibilityAroundEarth(longitude, latitude, ticks, pole = -1):
+    visibilities = {}
+    try :
+        (latISS, lonISS) = loadISSAPI()
+        delta = 360 / ticks / 2
+        # changer la direction pour pole nord
+        for i in rangeFromPole(0, ticks, pole) :
+            actuelle = float(longitude) + i * 360 / ticks
+            precedente = capLongitude(int(actuelle - delta))
+            suivante = capLongitude(int(actuelle + delta))
+            if isBetweenLongitudes(float(lonISS), precedente, suivante) :
+                visibilities[i] = maxi
+            else :
+                visibilities[i] = off  
+    except Exception as e :
+        print ('Erreur ISS')
+    print(visibilities)
     return visibilities

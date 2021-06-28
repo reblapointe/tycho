@@ -24,8 +24,12 @@ with open('userSettings.json') as f:
 lat = params["latitude"]
 lon = params["longitude"]
 bodies = params['bodies']
+pole = 1 if "standingOnPole" in params and params["standingOnPole"] == "south" else -1
 showISS = False
 publishToMQTT = False
+refreshRate = 60
+if 'secondsBetweenRefresh' not in params or params['secondsBetweenRefresh'] < 10 :
+    params['secondsBetweenRefresh'] = 60
 
 for b in params["bodies"]:
     if b["scope"] != 0 :
@@ -87,6 +91,7 @@ def writeStateOfLights(date = datetime.datetime.now()) :
     for b in bodies :
         if nameWidth < len(b['name']) :
             nameWidth = len(b['name'])
+
     for b in bodies :
         print((b['name'] + ' : |').rjust(nameWidth + len(' : |')), end = '')
         for l in b['led']:
@@ -98,44 +103,10 @@ def writeStateOfLights(date = datetime.datetime.now()) :
                 print(' ', end = '') 
         print('|')
 
-def isBetweenLongitudes(l, a, b) :
-    return a <= l <= b or l <= b <= a or b <= a <= l
-    
-def capLongitude(l) :
-    if l < -180 : return l + 360
-    if l > 180 : return l - 360
-    return l;
-
-def writeISS(latISS, lonISS):
-    
-    for b in bodies :
-        if b['name'] == 'ISS' :
-            iss = b
-
-    delta = 360 / nbTicks / 2
-    for i in range(0, nbTicks) :
-        actuelle = float(lon) + i * 360 / nbTicks
-        precedente = capLongitude(int(actuelle - delta))
-        suivante = capLongitude(int(actuelle + delta))
-        if isBetweenLongitudes(float(lonISS), precedente, suivante) :
-            iss['led'][i] = tycho.maxi
-        else :
-            iss['led'][i] = tycho.off
-    print(iss)
-    
-def printLongitudes() :
-    delta = 360 / nbTicks / 2
-    for i in range(0, nbTicks) :
-        actuelle = float(lon) + i * 360 / nbTicks
-        precedente = capLongitude(int(actuelle - delta))
-        suivante = capLongitude(int(actuelle + delta))
-        print(str(precedente) + '->' + str(suivante), end = ',')
-    print()
-    
 def loop() :
     print('LOOP')
     global bodies
-    printLongitudes()
+    tycho.printLongitudes(nbTicks, lat, lon, pole)
     while True:
         for b in bodies :
             if 'horizonNumber' in b.keys() :
@@ -143,18 +114,19 @@ def loop() :
                     body = b['horizonNumber'],
                     longitude = lon, latitude = lat,
                     ticks = nbTicks,
-                    date = datetime.datetime.utcnow())
-        if showISS :
-            try : 
-                (latISS, lonISS) = tycho.loadISSAPI()
-                writeISS(latISS, lonISS)
-            except Exception as e :
-                print ('Erreur ISS')
+                    date = datetime.datetime.utcnow(),
+                    pole = pole)
+            else : # ISS
+                b['led'] = tycho.issVisibilityAroundEarth(
+                    longitude = lon,
+                    latitude = lat,
+                    ticks = nbTicks,
+                    pole = pole)
         writeStateOfLights(date = datetime.datetime.now())
         couleursJson = json.dumps(bodies)
         #print(couleursJson)
         publish(couleursJson)
-        time.sleep(60)
+        time.sleep(params['secondsBetweenRefresh'])
 
 def setup() :
     print('SETUP')
@@ -163,3 +135,5 @@ def setup() :
 
 setup()
 loop()
+
+
