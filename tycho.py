@@ -123,8 +123,11 @@ def readHorizonFile(body, latitude, longitude, date) :
         deleteOldHorizonFiles(datetime.datetime.now())
     with open(filename) as f :
         for num, line in enumerate(f) :
-            date = readHorizonDateTime(line[1:18])
-            bodyStates[date] = line[20]
+            try :
+                date = readHorizonDateTime(line[1:18])
+                bodyStates[date] = line[20]
+            except Exception as e :
+                print(str(e))
     return bodyStates
 
 def bodyVisibility(body,

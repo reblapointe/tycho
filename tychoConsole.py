@@ -14,7 +14,7 @@ import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
 
 #Start broker : mosquitto -d
 #View topic :
-# mosquitto_sub -h 192.168.1.101 -t tycho/60
+# mosquitto_sub -h 192.168.1.101 -t tycho/6
 
 params = {}
 client = 0
