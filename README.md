@@ -19,15 +19,14 @@ Start a mosquitto server. You can [install mosquitto](https://randomnerdtutorial
 Open `userSettings.json`.
 - enter longitude, latitude of your position
 - enter number of leds in your device (up to 360)
-- for each celestial body, pick visibility (1 = visible)
+- enter mqtt broker ip adress and port (required for neopixel, but not for console mode)
+- for each celestial body, pick scope (0 = not visible, 1 = show transit position only, 2 = show from rise to set)
 - for each celestial body, pick a RBG color
 
 Install required python packages
 `pip3 install -r requirements.txt`
 
-Set mqtt broker ip address in tychoConsole.py and run 
-
-`python3 tychoConsole.py`
+Run `python3 tychoConsole.py`
 
 
 ### Neopixel ring
