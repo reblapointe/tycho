@@ -12,21 +12,11 @@
 
 import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
 
-broker = '192.168.1.101'
-port = 1883
-
 
 #Start broker : mosquitto -d
 #View topic :
 # (localhost) mosquitto_sub -d -t testTopic
 # mosquitto_sub -L 'mqtt://10.0.0.57:1883/tycho/60'
-
-def on_publish(client, userdata, result):
-    print(userdata)
-
-client = paho.Client()
-client.on_publish = on_publish
-client.connect(broker, port, 3600)
 
 with open('userSettings.json') as f:
     params = json.load(f)
@@ -35,6 +25,7 @@ lat = params["latitude"]
 lon = params["longitude"]
 bodies = params['bodies']
 showISS = False
+publishToMQTT = False
 
 for b in params["bodies"]:
     if b["scope"] != 0 :
@@ -48,9 +39,24 @@ if len(sys.argv) > 1:
 else:
     nbTicks = params["nbLeds"]
 
+if 'mqtt_ip' in params :
+    publishToMQTT = True
+    def on_publish(client, userdata, result):
+        print(userdata)
+    broker = params["mqtt_ip"]
+    if 'mqtt_port' in params :
+        port = params["mqtt_port"]
+    else :
+        port = 1883
+
+    client = paho.Client()
+    client.on_publish = on_publish
+    client.connect(broker, port, 3600)
+
 def publish(s:str) :
-    ret = client.publish('tycho/' + str(nbTicks), s, retain = True)
-    
+    if publishToMQTT : 
+        ret = client.publish('tycho/' + str(nbTicks), s, retain = True)
+
 for b in bodies :
     b['led'] = {}
 [print(b) for b in bodies]
