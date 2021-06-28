@@ -168,7 +168,7 @@ def bodyVisibilityAroundEarth(body, longitude, latitude,
                               ticks, date = datetime.datetime.utcnow(), pole = -1) :
     visibilities = {}
     for i in rangeFromPole(0, ticks, pole) :
-        nextLong = longitude + int((360 / ticks * i))
+        nextLong = capLongitude(longitude + pole * int((360 / ticks * i)))
         if nextLong > 180 : nextLong -= 360
         visibilities[i] = bodyVisibility(body = body,
                                          longitude = nextLong,
@@ -178,7 +178,7 @@ def bodyVisibilityAroundEarth(body, longitude, latitude,
     return visibilities
 
 def rangeFromPole(start, end, pole) :
-    return range(end, start, -1) if pole == -1 else range(start, end) 
+    return range(end - 1, start - 1, -1) if pole == -1 else range(start, end) 
 
 def issVisibilityAroundEarth(longitude, latitude, ticks, pole = -1):
     visibilities = {}
@@ -186,8 +186,8 @@ def issVisibilityAroundEarth(longitude, latitude, ticks, pole = -1):
         (latISS, lonISS) = loadISSAPI()
         delta = 360 / ticks / 2
         # changer la direction pour pole nord
-        for i in rangeFromPole(0, ticks, pole) :
-            actuelle = float(longitude) + i * 360 / ticks
+        for i in range(0, ticks) :
+            actuelle = float(longitude) + pole * i * 360 / ticks
             precedente = capLongitude(int(actuelle - delta))
             suivante = capLongitude(int(actuelle + delta))
             if isBetweenLongitudes(float(lonISS), precedente, suivante) :
