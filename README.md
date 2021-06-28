@@ -24,7 +24,7 @@ Open `userSettings.json`.
 
 Set mqtt broker ip address in tychoConsole.py and run 
 
-`python3 tychoConsole.py`
+`pipenv run python tychoConsole.py`
 
 
 ### Neopixel ring

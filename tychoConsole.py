@@ -1,3 +1,5 @@
+#nohup pipenv run python tychoConsole.py > output.log
+
 import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
 
 broker = '192.168.1.101'
