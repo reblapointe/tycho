@@ -23,16 +23,18 @@ def horizonFileName(body, latitude, longitude, date):
             'lat' + str(latitude) + 'long'+ str(longitude) +
             'date' + date.strftime('%Y-%m') + '.txt')
 
-def deleteOldHorizonFiles(date) :
-    
+def deleteOldHorizonFiles(date) :    
     files = glob.glob("horizonFiles/*.txt")
     for f in files :
-        dateFile = datetime.datetime.strptime(f[len(f)-11:len(f)-4], '%Y-%m')   # ends with 2021-06.txt
-        #dateFile = dateFile.replace(hour = 0, minute = 0, day = 1)
-        if dateFile < (date - relativedelta(months=+2)) :
-            os.remove(f)
-            print(f + ' deleted')
-    
+        try :
+            dateFile = datetime.datetime.strptime(f[len(f)-11:len(f)-4], '%Y-%m')   # ends with 2021-06.txt
+            #dateFile = dateFile.replace(hour = 0, minute = 0, day = 1)
+            if dateFile < (date - relativedelta(months=+2)) :
+                os.remove(f)
+                print(f + ' deleted')
+        except Exception as e :
+            pass
+
 # ne pas paralléliser. La NASA veut pas.
 def loadHorizonFile(body, latitude, longitude, date):
     time.sleep(1) # rilaxe un peu
