@@ -1,6 +1,6 @@
 import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
 
-broker = '192.168.1.133'
+broker = '192.168.1.101'
 port = 1883
 
 
@@ -15,9 +15,6 @@ def on_publish(client, userdata, result):
 client = paho.Client()
 client.on_publish = on_publish
 client.connect(broker, port, 3600)
-
-def publish(s:str) :
-    ret = client.publish('tycho/60', s, retain = True)
 
 with open('userSettings.json') as f:
     params = json.load(f)
@@ -39,6 +36,9 @@ if len(sys.argv) > 1:
 else:
     nbTicks = params["nbLeds"]
 
+def publish(s:str) :
+    ret = client.publish('tycho/' + str(nbTicks), s, retain = True)
+    
 for b in bodies :
     b['led'] = {}
 [print(b) for b in bodies]
@@ -137,7 +137,6 @@ def loop() :
         #print(couleursJson)
         publish(couleursJson)
         time.sleep(60)
-        tycho.deleteOldHorizonFiles(datetime.datetime.now())
 
 def setup() :
     print('SETUP')

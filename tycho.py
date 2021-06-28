@@ -1,4 +1,5 @@
 import time, datetime, os, requests, glob, json
+from dateutil.relativedelta import relativedelta
 
 # all time in UTC
 
@@ -20,23 +21,23 @@ def readHorizonDateTime(s) :
 def horizonFileName(body, latitude, longitude, date):
     return ('horizonFiles/body' + str(body) +
             'lat' + str(latitude) + 'long'+ str(longitude) +
-            'date' + date.strftime('%Y-%m-%d') + '.txt')
+            'date' + date.strftime('%Y-%m') + '.txt')
 
 def deleteOldHorizonFiles(date) :
+    
     files = glob.glob("horizonFiles/*.txt")
     for f in files :
-        dateFile = datetime.datetime.strptime(f[len(f)-14:len(f)-4], '%Y-%m-%d')
-        if dateFile < (date - datetime.timedelta(days = 7)) :
+        dateFile = datetime.datetime.strptime(f[len(f)-11:len(f)-4], '%Y-%m')   # ends with 2021-06.txt
+        #dateFile = dateFile.replace(hour = 0, minute = 0, day = 1)
+        if dateFile < (date - relativedelta(months=+2)) :
             os.remove(f)
             print(f + ' deleted')
     
 # ne pas paralléliser. La NASA veut pas.
 def loadHorizonFile(body, latitude, longitude, date):
     time.sleep(1) # rilaxe un peu
-    debut = (date.replace(hour = 0, minute = 0) -
-             datetime.timedelta(minutes = 4))
-    fin = (date.replace(hour = 23, minute = 59) +
-           datetime.timedelta(minutes = 4))
+    debut = date.replace(hour = 0, minute = 0, day = 1) - datetime.timedelta(minutes = 4)
+    fin = debut + relativedelta(months=+1) + datetime.timedelta(minutes = 4)
     url = ('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&'
            'COMMAND=\'' + str(body) + '\'&'
            'CENTER=\'coord@399\'&'
@@ -99,11 +100,12 @@ def readHorizonFile(body, latitude, longitude, date) :
                                 latitude = latitude,
                                 longitude = longitude,
                                 date = date)
-    if not os.path.exists(filename):
+    while not os.path.exists(filename):
         loadHorizonFile(body = body,
                         latitude = latitude,
                         longitude = longitude,
                         date = date)
+        deleteOldHorizonFiles(datetime.datetime.now())
     with open(filename) as f :
         for num, line in enumerate(f) :
             date = readHorizonDateTime(line[1:18])
@@ -127,7 +129,7 @@ def bodyVisibility(body,
     
     for s in bodyStates :
         if s < tickBegins :
-             lastState = bodyStates[s]
+            lastState = bodyStates[s]
         if tickBegins <= s <= tickEnds :
             state = bodyStates[s]
         elif s > tickEnds and nextState == '' :
