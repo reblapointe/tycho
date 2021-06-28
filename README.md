@@ -22,9 +22,12 @@ Open `userSettings.json`.
 - for each celestial body, pick visibility (1 = visible)
 - for each celestial body, pick a RBG color
 
+Install required python packages
+`pip3 install -r requirements.txt`
+
 Set mqtt broker ip address in tychoConsole.py and run 
 
-`pipenv run python tychoConsole.py`
+`python3 tychoConsole.py`
 
 
 ### Neopixel ring
