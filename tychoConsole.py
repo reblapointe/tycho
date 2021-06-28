@@ -1,4 +1,14 @@
-#nohup pipenv run python tychoConsole.py > output.log
+# install pipenv (for dev environment)
+#python3 -m pip install --user pipenv
+
+# install all packages (for dev environment)
+#pipenv install requests (....)
+
+# load requirements (before running, on new install, w or w/o pipenv)
+#pipenv lock -r > requirements.txt
+
+# Run app no hanup (termine pas même après logout)
+# nohup python3 tychoConsole.py
 
 import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
 
