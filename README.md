@@ -20,6 +20,8 @@ Open `userSettings.json`.
 - enter longitude, latitude of your position
 - enter number of leds in your device (up to 360)
 - enter mqtt broker ip adress and port (required for neopixel, but not for console mode)
+- chose pole (north or south, default north. Determines if the lights go clockwise or counter clockwise)
+- chose refresh rate in seconds (rate at which lights are refreshed and ISS data is fetched, minimum 10)
 - for each celestial body, pick scope (0 = not visible, 1 = show transit position only, 2 = show from rise to set)
 - for each celestial body, pick a RBG color
 
