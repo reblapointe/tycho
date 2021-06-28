@@ -45,7 +45,7 @@ def initParams() :
     if 'mqtt_ip' in params :
         client = initMQTT(params['mqtt_ip'], 1883 if 'mqtt_port' not in params else params['mqtt_port'])
         print('mqtt broker ip ' + params['mqtt_ip'])
-        print('mqtt port ' + params['mqtt_port'])
+        print('mqtt port ' + str(params['mqtt_port']))
     else :
         print('no mqtt broker')
 
