@@ -70,8 +70,7 @@ def loadHorizonFile(body, latitude, longitude, date):
         lines = response.text.split('\n')
         f = open(horizonFileName(body = body,
                                  latitude = latitude, longitude = longitude,
-                                 date = date), 'w')
-        
+                                 date = date), 'w')        
         began = False
         read = False
         for line in lines :
@@ -85,7 +84,6 @@ def loadHorizonFile(body, latitude, longitude, date):
     except Exception as e :
         print ('Erreur JPL Horizon')
 
-
 def isBetweenLongitudes(l, a, b) :
     return a <= l <= b or l <= b <= a or b <= a <= l
     
@@ -96,8 +94,8 @@ def capLongitude(l) :
     
 def printLongitudes(nbTicks, lat, lon, pole = -1) :
     delta = 360 / nbTicks / 2
-    for i in rangeFromPole(0, nbTicks, pole) :
-        actuelle = float(lon) + i * 360 / nbTicks
+    for i in range(0, nbTicks) :
+        actuelle = float(lon) + pole * i * 360 / nbTicks
         precedente = capLongitude(int(actuelle - delta))
         suivante = capLongitude(int(actuelle + delta))
         print(str(precedente) + '->' + str(suivante), end = ',')
@@ -167,7 +165,7 @@ def bodyVisibility(body,
 def bodyVisibilityAroundEarth(body, longitude, latitude,
                               ticks, date = datetime.datetime.utcnow(), pole = -1) :
     visibilities = {}
-    for i in rangeFromPole(0, ticks, pole) :
+    for i in range(0, ticks) :
         nextLong = capLongitude(longitude + pole * int((360 / ticks * i)))
         if nextLong > 180 : nextLong -= 360
         visibilities[i] = bodyVisibility(body = body,
@@ -176,9 +174,6 @@ def bodyVisibilityAroundEarth(body, longitude, latitude,
                                          ticks = ticks,
                                          date = date)
     return visibilities
-
-def rangeFromPole(start, end, pole) :
-    return range(end - 1, start - 1, -1) if pole == -1 else range(start, end) 
 
 def issVisibilityAroundEarth(longitude, latitude, ticks, pole = -1):
     visibilities = {}

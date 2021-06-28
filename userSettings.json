@@ -1,9 +1,7 @@
 {
-    "latitude" : 48,
-    "longitude" : -71,
-    "nbLeds" : 60,
-    "mqtt_ip" : "192.168.1.101",
-    "mqtt_port" : 1883,
+    "latitude" : 80,
+    "longitude" : 0,
+    "nbLeds" : 25,
     "standingOnPole" : "north",
     "secondsBetweenRefresh" : 60,
     "bodies" : [
@@ -66,7 +64,7 @@
 	{
 	    "name" : "Uranus",
 	    "horizonNumber" : 799,
-	    "scope" : 1,
+	    "scope" : 0,
 	    "r" : 153,
 	    "g" : 219,
 	    "b" : 245

@@ -12,64 +12,62 @@
 
 import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
 
-
 #Start broker : mosquitto -d
 #View topic :
-# (localhost) mosquitto_sub -d -t testTopic
-# mosquitto_sub -L 'mqtt://10.0.0.57:1883/tycho/60'
+# mosquitto_sub -h 192.168.1.101 -t tycho/60
 
-with open('userSettings.json') as f:
-    params = json.load(f)
+params = {}
+client = 0
 
-lat = params["latitude"]
-lon = params["longitude"]
-bodies = params['bodies']
-pole = 1 if "standingOnPole" in params and params["standingOnPole"] == "south" else -1
-showISS = False
-publishToMQTT = False
-refreshRate = 60
-if 'secondsBetweenRefresh' not in params or params['secondsBetweenRefresh'] < 10 :
-    params['secondsBetweenRefresh'] = 60
+def paramsDefault(paramName, default) :
+    global params
+    if paramName not in params :
+        print(paramName + ' undefined')
+        params[paramName] = default
+    print(paramName + ' ' + str(params[paramName]))
+    
+def initParams() :
+    global params
+    global client
+    
+    with open('userSettings.json') as f:
+        params = json.load(f)
 
-for b in params["bodies"]:
-    if b["scope"] != 0 :
-        if 'horizonNumber' not in b.keys() :
-            showISS = True
-bodies[:] = [b for b in bodies if b['scope'] != 0]
+    paramsDefault('latitude', 0)
+    paramsDefault('longitude', 0)
+    paramsDefault('nbLeds', 60)
+    paramsDefault('standingOnPole', 'north')
+    paramsDefault('secondsBetweenRefresh', 60)
+    params['standingOnPole'] = 1 if params['standingOnPole'] == 'south' else -1
+    if params['secondsBetweenRefresh'] < 10 : params['secondsBetweenRefresh'] = 60
+    params['bodies'][:] = [b for b in params['bodies'] if b['scope'] != 0]
 
-if len(sys.argv) > 1:
-    import tychoLEDBarGraph as led
-    nbTicks = led.nbTicks # number of leds
-else:
-    nbTicks = params["nbLeds"]
+    if 'mqtt_ip' in params :
+        client = initMQTT(params['mqtt_ip'], 1883 if 'mqtt_port' not in params else params['mqtt_port'])
+        print('mqtt broker ip ' + params['mqtt_ip'])
+        print('mqtt port ' + params['mqtt_port'])
+    else :
+        print('no mqtt broker')
 
-if 'mqtt_ip' in params :
-    publishToMQTT = True
+    # init celestial params['bodies']' leds
+    for b in params['bodies'] :
+        b['led'] = {}
+        print(b)
+        for i in range(0, params['nbLeds']) :
+            b['led'][i] = 0
+        
+        
+def publish(s:str) :
+    if 'mqtt_ip' in params : 
+        ret = client.publish('tycho/' + str(params['nbLeds']), s, retain = True)
+
+def initMQTT(broker, port) :
     def on_publish(client, userdata, result):
         print(userdata)
-    broker = params["mqtt_ip"]
-    if 'mqtt_port' in params :
-        port = params["mqtt_port"]
-    else :
-        port = 1883
-
     client = paho.Client()
     client.on_publish = on_publish
     client.connect(broker, port, 3600)
-
-def publish(s:str) :
-    if publishToMQTT : 
-        ret = client.publish('tycho/' + str(nbTicks), s, retain = True)
-
-for b in bodies :
-    b['led'] = {}
-[print(b) for b in bodies]
-
-for b in bodies :
-    for i in range(0, nbTicks) :
-        b['led'][i] = 0
-        
-tickMinutes = 24 * 60 / nbTicks # in minutes
+    return client
 
 def rgbfy(c):
     if c > 255 : c = 255
@@ -88,13 +86,13 @@ def writeStateOfLights(date = datetime.datetime.now()) :
     print()
     print(date.strftime('%Y-%m-%d %H:%M'))
     nameWidth = 1    
-    for b in bodies :
+    for b in params['bodies'] :
         if nameWidth < len(b['name']) :
             nameWidth = len(b['name'])
 
-    for b in bodies :
+    for b in params['bodies'] :
         print((b['name'] + ' : |').rjust(nameWidth + len(' : |')), end = '')
-        for l in range(0, nbTicks):
+        for l in range(0, params['nbLeds']):
             if b['led'][l] == tycho.maxi :
                 printRGBBlock(b['r'], b['g'], b['b'])
             elif b['led'][l] == tycho.on:
@@ -105,33 +103,32 @@ def writeStateOfLights(date = datetime.datetime.now()) :
 
 def loop() :
     print('LOOP')
-    global bodies
-    tycho.printLongitudes(nbTicks, lat, lon, pole)
+    tycho.printLongitudes(params['nbLeds'], params['latitude'], params['longitude'], params['standingOnPole'])
     while True:
-        for b in bodies :
+        for b in params['bodies'] :
             if 'horizonNumber' in b.keys() :
                 b['led'] = tycho.bodyVisibilityAroundEarth(
                     body = b['horizonNumber'],
-                    longitude = lon, latitude = lat,
-                    ticks = nbTicks,
+                    longitude = params['longitude'], latitude = params['latitude'],
+                    ticks = params['nbLeds'],
                     date = datetime.datetime.utcnow(),
-                    pole = pole)
+                    pole = params['standingOnPole'])
             else : # ISS
                 b['led'] = tycho.issVisibilityAroundEarth(
-                    longitude = lon,
-                    latitude = lat,
-                    ticks = nbTicks,
-                    pole = pole)
+                    longitude = params['longitude'],
+                    latitude = params['latitude'],
+                    ticks = params['nbLeds'],
+                    pole = params['standingOnPole'])
         writeStateOfLights(date = datetime.datetime.now())
-        couleursJson = json.dumps(bodies)
-        #print(couleursJson)
+        couleursJson = json.dumps(params['bodies'])
         publish(couleursJson)
         time.sleep(params['secondsBetweenRefresh'])
 
 def setup() :
     print('SETUP')
+    initParams()
     if len(sys.argv) > 1 :
-        threading.Thread(target = led.allumer, args=(bodies,)).start()
+        threading.Thread(target = led.allumer, args=(params['bodies'],)).start()
 
 setup()
 loop()
