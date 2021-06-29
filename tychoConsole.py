@@ -90,7 +90,7 @@ def writeStateOfLights(date = datetime.datetime.now()) :
 
     for b in params['bodies'] :
         print((b['name'] + ' : |').rjust(nameWidth + len(' : |')), end = '')
-        for l in range(0, params['nbLeds']):
+        for l in b['led'] :
             if b['led'][l] == tycho.maxi :
                 printRGBBlock(b['r'], b['g'], b['b'])
             elif b['led'][l] == tycho.on:
