@@ -19,7 +19,7 @@
 	    "name" : "Moon",
 	    "horizonNumber" : 301,
 	    "scope" : 2,
-	    "r" : 255,
+	    "r" : 0,
 	    "g" : 0,
 	    "b" : 255
 	},
@@ -34,7 +34,7 @@
 	{
 	    "name" : "Venus",
 	    "horizonNumber" : 299,
-	    "scope" : 0,
+	    "scope" : 1,
 	    "r" : 255,
 	    "g" : 255,
 	    "b" : 0
@@ -42,7 +42,7 @@
 	{
 	    "name" : "Mars",
 	    "horizonNumber" : 499,
-	    "scope" : 0,
+	    "scope" : 1,
 	    "r" : 255,
 	    "g" : 0,
 	    "b" : 0

@@ -16,8 +16,8 @@ import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
 #View topic :
 # mosquitto_sub -h 192.168.1.101 -t tycho/6
 
-params = {}
-client = 0
+params = {}# simulation parameters
+client = 0# mqtt client
 
 def paramsDefault(paramName, default) :
     global params
@@ -26,48 +26,46 @@ def paramsDefault(paramName, default) :
         params[paramName] = default
     print(paramName + ' ' + str(params[paramName]))
     
+def on_publish(client, userdata, result):
+    print(userdata)
+
+def initMQTT() :
+    global client
+    try :
+        if 'mqtt_ip' in params :
+            paramsDefault('mqtt_port', 1883)
+            client = paho.Client()
+            client.on_publish = on_publish
+            client.connect(params['mqtt_ip'], params['mqtt_port'], 3600)
+            print('mqtt broker ' + params['mqtt_ip'] + ':' + str(params['mqtt_port']))
+        else :
+            print('no mqtt broker')
+    except Exception as e :
+        print(str(e))
+    
 def initParams() :
     global params
-    global client
     
-    with open('userSettings.json') as f:
+    with open('userSettings.json') as f :
         params = json.load(f)
 
     paramsDefault('latitude', 0)
     paramsDefault('longitude', 0)
     paramsDefault('nbLeds', 60)
-    paramsDefault('standingOnPole', 'north')
     paramsDefault('secondsBetweenRefresh', 60)
-    params['standingOnPole'] = 1 if params['standingOnPole'] == 'south' else -1
+    paramsDefault('standingOnPole', 'north')
+    params['standingOnPole'] = 1 if params['standingOnPole'] == 'south' else -1 
     if params['secondsBetweenRefresh'] < 10 : params['secondsBetweenRefresh'] = 60
+
     params['bodies'][:] = [b for b in params['bodies'] if b['scope'] != 0]
-
-    if 'mqtt_ip' in params :
-        client = initMQTT(params['mqtt_ip'], 1883 if 'mqtt_port' not in params else params['mqtt_port'])
-        print('mqtt broker ip ' + params['mqtt_ip'])
-        print('mqtt port ' + str(params['mqtt_port']))
-    else :
-        print('no mqtt broker')
-
-    # init celestial params['bodies']' leds
     for b in params['bodies'] :
         b['led'] = {}
-        print(b)
-        for i in range(0, params['nbLeds']) :
-            b['led'][i] = 0
-        
-        
+        for i in range(0, params['nbLeds']) : b['led'][i] = 0
+    print(params)
+    
 def publish(s:str) :
     if 'mqtt_ip' in params : 
         ret = client.publish('tycho/' + str(params['nbLeds']), s, retain = True)
-
-def initMQTT(broker, port) :
-    def on_publish(client, userdata, result):
-        print(userdata)
-    client = paho.Client()
-    client.on_publish = on_publish
-    client.connect(broker, port, 3600)
-    return client
 
 def rgbfy(c):
     if c > 255 : c = 255
@@ -127,6 +125,7 @@ def loop() :
 def setup() :
     print('SETUP')
     initParams()
+    initMQTT()
     if len(sys.argv) > 1 :
         threading.Thread(target = led.allumer, args=(params['bodies'],)).start()
 
