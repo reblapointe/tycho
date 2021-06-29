@@ -180,6 +180,9 @@ def bodyVisibilityAroundEarth(body, longitude, latitude,
 
 def issVisibilityAroundEarth(longitude, latitude, ticks, pole = -1):
     visibilities = {}
+    
+    for i in range(0, ticks) :
+        visibilities[i] = off
     try :
         (latISS, lonISS) = loadISSAPI()
         delta = 360 / ticks / 2
@@ -189,10 +192,7 @@ def issVisibilityAroundEarth(longitude, latitude, ticks, pole = -1):
             precedente = capLongitude(int(actuelle - delta))
             suivante = capLongitude(int(actuelle + delta))
             if isBetweenLongitudes(float(lonISS), precedente, suivante) :
-                visibilities[i] = maxi
-            else :
-                visibilities[i] = off  
+                visibilities[i] = maxi 
     except Exception as e :
         print ('Erreur ISS')
-    print(visibilities)
     return visibilities

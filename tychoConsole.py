@@ -58,11 +58,11 @@ def initParams() :
     if params['secondsBetweenRefresh'] < 10 : params['secondsBetweenRefresh'] = 60
 
     params['bodies'][:] = [b for b in params['bodies'] if b['scope'] != 0]
+    print(params)
     for b in params['bodies'] :
         b['led'] = {}
         for i in range(0, params['nbLeds']) : b['led'][i] = 0
-    print(params)
-    
+
 def publish(s:str) :
     if 'mqtt_ip' in params : 
         ret = client.publish('tycho/' + str(params['nbLeds']), s, retain = True)
@@ -90,7 +90,7 @@ def writeStateOfLights(date = datetime.datetime.now()) :
 
     for b in params['bodies'] :
         print((b['name'] + ' : |').rjust(nameWidth + len(' : |')), end = '')
-        for l in b['led'] :
+        for l in range(0, params['nbLeds']) :
             if b['led'][l] == tycho.maxi :
                 printRGBBlock(b['r'], b['g'], b['b'])
             elif b['led'][l] == tycho.on:
@@ -107,7 +107,8 @@ def loop() :
             if 'horizonNumber' in b.keys() :
                 b['led'] = tycho.bodyVisibilityAroundEarth(
                     body = b['horizonNumber'],
-                    longitude = params['longitude'], latitude = params['latitude'],
+                    longitude = params['longitude'],
+                    latitude = params['latitude'],
                     ticks = params['nbLeds'],
                     date = datetime.datetime.utcnow(),
                     pole = params['standingOnPole'])
