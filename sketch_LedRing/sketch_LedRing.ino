@@ -17,6 +17,15 @@
  *  #endif
 */
 
+/*
+ * Des fois serial chie. il faut s'assurer d'avoir python3 et non python2
+ * sudo apt install python-is-python3
+ * sudo apt-mark hold python2 python2-minimal python2.7 python2.7-minimal libpython2-stdlib libpython2.7-minimal libpython2.7-stdlib 
+ *
+ * https://github.com/espressif/arduino-esp32
+ * If you want to test ESP32-S2 and/or ESP32-C3 through the board manager, please use the development release link: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json and install the latest 2.0.0 version.
+*/
+
 #define LED_COUNT 60
 #define LED_PIN 3
 #define REFRESH_RATE 1000
