@@ -48,7 +48,10 @@ Follow Quick Start instructions
 
 ### Neopixel ring
 - Setup ring with controller :
+
 ![Circuit](img/circuit.png?raw=true "circuit")
+
+![CircuitPhoto](img/circuitPhoto.jpg?raw=true "circuitPhoto")
 - Open [sketch](sketch_LedRing/sketchLedRing.ino).
   - Set number of leds in the device (LED_COUNT)
   - Set IP address (MQTT_BROKER), port (MQTT_PORT) and topic (MQTT_TOPIC) of the MQTT broker
