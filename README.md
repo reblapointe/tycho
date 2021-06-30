@@ -21,7 +21,7 @@ Open `userSettings.json`.
 
 Install required python packages `pip3 install -r requirements.txt`
 
-Run `python3 main.py`
+Run `python3 mainTycho.py`
 
 ## How to build w/ neopixel ring
 ### Material
