@@ -1,7 +1,7 @@
 # tycho
 Personal project showing transits of celestial bodies for a given latitude on a RBG LED ring (neopixel). Data fetched monthly for each celestial bodies and each LED from NASA's [JPL HORIZONS project](https://ssd.jpl.nasa.gov/horizons.cgi). ISS position fetched every minute from http://api.open-notify.org/iss-now.json.
 
-![Ring](ring.jpg?raw=true "Ring")
+![Ring](Ring.jpg?raw=true "Ring")
 
 ## Quick start
 Tycho can run in console mode if you don't have a Neopixel ring.
