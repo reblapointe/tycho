@@ -1,8 +1,7 @@
 # tycho
-Personal project showing transits of celestial bodies for a given latitude on a RBG LED ring (neopixel). Data fetched daily for each celestial bodies and each LED from NASA's [JPL HORIZONS project](https://ssd.jpl.nasa.gov/horizons.cgi). ISS position fetched every minute from http://api.open-notify.org/iss-now.json.
+Personal project showing transits of celestial bodies for a given latitude on a RBG LED ring (neopixel). Data fetched monthly for each celestial bodies and each LED from NASA's [JPL HORIZONS project](https://ssd.jpl.nasa.gov/horizons.cgi). ISS position fetched every minute from http://api.open-notify.org/iss-now.json.
 
 ## Material
-
 - Raspberry pi (or any computer)
 - Neopixel ring (or ws2812b ring)
 - microcontroller w/ wifi (I tested with esp8266 and esp32s2)
@@ -34,7 +33,6 @@ Open `userSettings.json`.
 Install required python packages `pip3 install -r requirements.txt`
 
 Run `python3 main.py`
-
 
 ### Neopixel ring
 - setup ring with controller as shown in [drawing](circuit.png).
