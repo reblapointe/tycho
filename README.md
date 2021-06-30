@@ -51,8 +51,8 @@ Follow Quick Start instructions
 
 ![Circuit](img/circuit.png?raw=true "circuit")
 
-With my limited skills
-![CircuitPhoto](img/circuitPhoto.jpg?raw=true "circuitPhoto")
+Here is a a little protoboard I build with my limited skills
+![CircuitPhoto](img/circuitPhoto.jpg)
 
 - Open [sketch](sketch_LedRing/sketchLedRing.ino).
   - Set number of leds in the device (LED_COUNT)
