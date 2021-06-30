@@ -11,10 +11,7 @@
  *  
  *  #define SSID "Your ssid"
  *  #define PASSWORD "Your wifi password"
- *  #define MQTT_SEVER "192.168.1.133" 
- *  #define MQTT_PORT 1883
- *  #define TOPIC "tycho/60"
- *  #define LED_COUNT 60
+ *  
  *  #endif
 */
 
@@ -27,11 +24,25 @@
  * If you want to test ESP32-S2 and/or ESP32-C3 through the board manager, please use the development release link: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json and install the latest 2.0.0 version.
 */
 
+#define MQTT_BROKER "192.168.1.100"
+#define MQTT_PORT 1883
+#define MQTT_TOPIC "tycho/60"
+#define LED_COUNT 60
+
 #define LED_PIN 3
 #define REFRESH_RATE 1000
 #define MAX_MQTT_MESSAGE_LENGTH 20000
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+// Argument 1 = Number of pixels in NeoPixel strip
+// Argument 2 = Arduino pin number (most are valid)
+// Argument 3 = Pixel type flags, add together as needed:
+//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
+//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
+//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+//   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -63,7 +74,7 @@ void checkWifi()
 void connectToMQTT()
 {
   client.setBufferSize(MAX_MQTT_MESSAGE_LENGTH);
-  client.setServer(MQTT_SERVER, MQTT_PORT);
+  client.setServer(MQTT_BROKER, MQTT_PORT);
   client.setKeepAlive(3600);
  
   while (!client.connected()) 
@@ -78,7 +89,7 @@ void connectToMQTT()
       delay(2000);
     }
   }
-  client.subscribe(TOPIC); 
+  client.subscribe(MQTT_TOPIC); 
   client.setCallback(callbackNewMQTTMessage);
 }
 
