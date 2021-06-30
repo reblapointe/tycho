@@ -22,19 +22,19 @@ Open `userSettings.json`.
 - enter mqtt broker ip adress and port (required for neopixel, but not for console mode)
 - enter brightness (0 to 100)
 - chose pole (north or south, default north. Determines if the lights go clockwise or counter clockwise)
-- chose refresh rate in seconds (rate at which lights are refreshed and ISS data is fetched, minimum 10)
+- enter refresh rate in seconds (rate at which lights are refreshed and ISS data is fetched, minimum 10)
 - for each celestial body, pick scope (0 = not visible, 1 = show transit position only, 2 = show from rise to set)
 - for each celestial body, pick a RBG color
 
 Install required python packages
 `pip3 install -r requirements.txt`
 
-Run `python3 tychoConsole.py`
+Run `python3 main.py`
 
 
 ### Neopixel ring
 - setup ring with controller as shown in circuit.png.
-- set SSID, password, ip address and port of the mqtt server in sketch_LedRing/sketch_LedRing.ino
+- set SSID, password, ip address and port of the mqtt btoker in sketch_LedRing/wifiParams.h
 - flash to microcontroller
 
 The first LED corresponds to the longitude provided by the user
