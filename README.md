@@ -51,7 +51,8 @@ Follow Quick Start instructions
 
 ![Circuit](img/circuit.png?raw=true "circuit")
 
-Here is a a little protoboard I build with my limited skills
+Here is a little protoboard I build with my limited skills :
+
 ![CircuitPhoto](img/circuitPhoto.jpg)
 
 - Open [sketch](sketch_LedRing/sketchLedRing.ino).
