@@ -45,7 +45,8 @@ Follow Quick Start instructions
 - Setup ring with controller as shown in [drawing](circuit.png).
 - Open [sketch](sketch_LedRing/sketchLedRing.ino).
   - Set number of leds in the device (LED_COUNT)
-  - Set IP address (MQTT_SEVER), port (MQTT_PORT) and topic (TOPIC) the MQTT broker
+  - Set IP address (MQTT_BROKER), port (MQTT_PORT) and topic (MQTT_TOPIC) the MQTT broker
+  - Validate pixel type flags are comptatible with your neopixel ring (default NEO_GRB + NEO_KHZ800)
 - Create new file sketch_LedRing/wifiParams.h as detailed in [sketch](sketch_LedRing/sketchLedRing.ino) to set :
   - SSID
   - Password,
