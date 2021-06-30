@@ -7,18 +7,19 @@ Tycho can run in console mode if you don't have a Neopixel ring.
 Open `userSettings.json`.
 - enter desired longitude and latitude (default 0, 0)
 - enter number of leds of your device (up to 360, default 60)
-- enter mqtt broker ip address and port (required for neopixel, but not for console mode)
-- enter mqtt topics (default tycho/60 and tycho/json/60)
+- for each celestial body, pick scope 
+  - 0 = not shown
+  - 1 = light up on transit ('noon') only
+  - 2 = light up from rise to set with maximum brightness on transit
+- for each celestial body, pick a RBG color (0 to 255)
 - enter brightness (0 to 100, default 25)
-- chose pole 
-  - north or south, default north. Determines if the lights go clockwise or counter clockwise
+- chose pole (north or sougth, default north)
+  - determines if the lights go clockwise or counter clockwise
 - enter refresh rate in seconds 
   - rate at which lights are refreshed and ISS data is fetched, minimum 10, default 60
-- for each celestial body, pick scope 
-  - 0 = not visible
-  - 1 = show transit only
-  - 2 = show from rise to set with maximum brightness on transit
-- for each celestial body, pick a RBG color (0 to 255)
+- enter mqtt parameters (required for neopixel, but not for console mode)
+  - ip address and port (default port 1883)
+  - mqtt topics (default tycho/60 and tycho/json/60)
 
 Install required python packages `pip3 install -r requirements.txt`
 
