@@ -1,20 +1,9 @@
 # tycho
 Personal project showing transits of celestial bodies for a given latitude on a RBG LED ring (neopixel). Data fetched monthly for each celestial bodies and each LED from NASA's [JPL HORIZONS project](https://ssd.jpl.nasa.gov/horizons.cgi). ISS position fetched every minute from http://api.open-notify.org/iss-now.json.
 
-## Material
-- Raspberry pi (or any computer)
-- Neopixel ring (or ws2812b ring)
-- microcontroller w/ wifi (I tested with esp8266 and esp32s2)
-- 1000μF capacitor
-- 440Ω resistor
-- 5V-3.3V bidirectionnal logic Level shifter
-- 5V, 5A Power supply (as explained in [Adafruit's Neopixel Überguide](https://learn.adafruit.com/adafruit-neopixel-uberguide/powering-neopixels)
-
 ## Quick start
-### Mosquitto broker
-Start a mosquitto broker. You can [install mosquitto](https://randomnerdtutorials.com/how-to-install-mosquitto-broker-on-raspberry-pi/) and start a mosquitto broker on the pi.
+Tycho can run in console mode if you don't have a Neopixel ring.
 
-### Pi
 Open `userSettings.json`.
 - enter desired longitude and latitude (default 0, 0)
 - enter number of leds of your device (up to 360, default 60)
@@ -33,6 +22,19 @@ Open `userSettings.json`.
 Install required python packages `pip3 install -r requirements.txt`
 
 Run `python3 main.py`
+
+## How to build w/ neopixel ring
+### Material
+- Raspberry pi (or any computer)
+- Neopixel ring (or ws2812b ring)
+- microcontroller w/ wifi (I tested with esp8266 and esp32s2)
+- 1000μF capacitor
+- 440Ω resistor
+- 5V-3.3V bidirectionnal logic Level shifter
+- 5V, 5A Power supply (as explained in [Adafruit's Neopixel Überguide](https://learn.adafruit.com/adafruit-neopixel-uberguide/powering-neopixels)
+
+### Mosquitto broker
+Start a mosquitto broker. You can [install mosquitto](https://randomnerdtutorials.com/how-to-install-mosquitto-broker-on-raspberry-pi/) and start a mosquitto broker on the pi.
 
 ### Neopixel ring
 - setup ring with controller as shown in [drawing](circuit.png).
