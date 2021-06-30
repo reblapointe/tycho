@@ -51,9 +51,7 @@ Follow Quick Start instructions
 
 ![Circuit](img/circuit.png?raw=true "circuit")
 
-Here is a little protoboard I build with my limited skills (the two cables on the left go towards the power supply, the three cables on top go towards the Neopixel ring):
-
-![CircuitPhoto](img/circuitPhoto.jpg)
+[Here](img/circuitPhoto.jpg) is a little protoboard I build with my limited skills.
 
 - Open [sketch](sketch_LedRing/sketchLedRing.ino).
   - Set number of leds in the device (LED_COUNT)
