@@ -43,10 +43,12 @@ Follow Quick Start instructions
 
 ### Neopixel ring
 - Setup ring with controller as shown in [drawing](circuit.png).
+- Open [sketch](sketch_LedRing/sketchLedRing.ino).
+  - Set number of leds in the device (LED_COUNT)
+  - Set IP address (MQTT_SEVER), port (MQTT_PORT) and topic (TOPIC) the MQTT broker
 - Create new file sketch_LedRing/wifiParams.h as detailed in [sketch](sketch_LedRing/sketchLedRing.ino) to set :
-  - SSID and password,
-  - ip address, port and channel of the mqtt broker
-  - Number of LEDS
+  - SSID
+  - Password,
 - Flash to microcontroller (I use Arduino IDE)
 
 The first LED corresponds to the longitude provided by the user
