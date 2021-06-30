@@ -28,7 +28,7 @@ Install required python packages `pip3 install -r requirements.txt`
 Run `python3 mainTycho.py`
 
 
-![Console](img/console.jpg?raw=true "Console")
+![Console](img/console.png?raw=true "Console")
 
 ## How to build w/ neopixel ring
 ### Material
