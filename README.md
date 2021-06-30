@@ -33,8 +33,11 @@ Run `python3 main.py`
 - 5V-3.3V bidirectionnal logic Level shifter
 - 5V, 5A Power supply (as explained in [Adafruit's Neopixel Überguide](https://learn.adafruit.com/adafruit-neopixel-uberguide/powering-neopixels)
 
-### Mosquitto broker
-Start a mosquitto broker. You can [install mosquitto](https://randomnerdtutorials.com/how-to-install-mosquitto-broker-on-raspberry-pi/) and start a mosquitto broker on the pi.
+### Set up a MQTT broker
+You can [install mosquitto](https://randomnerdtutorials.com/how-to-install-mosquitto-broker-on-raspberry-pi/) and start a mosquitto broker on the Raspberry pi that runs the main script.
+
+### Run main script on the Raspberry pi
+Follow Quick Start instructions
 
 ### Neopixel ring
 - setup ring with controller as shown in [drawing](circuit.png).
