@@ -47,7 +47,7 @@ You can [install mosquitto](https://randomnerdtutorials.com/how-to-install-mosqu
 Follow Quick Start instructions
 
 ### Neopixel ring
-- Setup ring with controller as shown in
+- Setup ring with controller :
 ![Circuit](img/circuit.png?raw=true "circuit")
 - Open [sketch](sketch_LedRing/sketchLedRing.ino).
   - Set number of leds in the device (LED_COUNT)
