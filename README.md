@@ -1,7 +1,7 @@
 # tycho
 Personal project showing transits of celestial bodies for a given latitude on a RBG LED ring (neopixel). Data fetched monthly for each celestial bodies and each LED from NASA's [JPL HORIZONS project](https://ssd.jpl.nasa.gov/horizons.cgi). ISS position fetched every minute from http://api.open-notify.org/iss-now.json.
 
-![Ring](Ring.jpg?raw=true "Ring")
+![Ring](img/Ring.jpg?raw=true "Ring")
 
 ## Quick start
 Tycho can run in console mode if you don't have a Neopixel ring.
@@ -27,6 +27,9 @@ Install required python packages `pip3 install -r requirements.txt`
 
 Run `python3 mainTycho.py`
 
+
+![Console](img/console.jpg?raw=true "Console")
+
 ## How to build w/ neopixel ring
 ### Material
 - Raspberry pi (or any computer)
@@ -44,7 +47,7 @@ You can [install mosquitto](https://randomnerdtutorials.com/how-to-install-mosqu
 Follow Quick Start instructions
 
 ### Neopixel ring
-- Setup ring with controller as shown in [drawing](circuit.png).
+- Setup ring with controller as shown in [drawing](img/circuit.png).
 - Open [sketch](sketch_LedRing/sketchLedRing.ino).
   - Set number of leds in the device (LED_COUNT)
   - Set IP address (MQTT_BROKER), port (MQTT_PORT) and topic (MQTT_TOPIC) of the MQTT broker
