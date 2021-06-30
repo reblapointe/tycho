@@ -4,7 +4,8 @@
 #include <string>
 
 #include "wifiParams.h"
-/* wifiParams defines SSID, PASSWORD, MQTT_SERVER and MQTT_PORT
+/* wifiParams defines SSID, PASSWORD, MQTT_SERVER, MQTT_PORT, TOPIC and
+ * LED_COUNT : 
  *  #ifndef WIFI_PARAMS_H
  *  #define WIFI_PARAMS_H
  *  
@@ -12,7 +13,8 @@
  *  #define PASSWORD "Your wifi password"
  *  #define MQTT_SEVER "192.168.1.133" 
  *  #define MQTT_PORT 1883
- *  
+ *  #define TOPIC "tycho/60"
+ *  #define LED_COUNT 60
  *  #endif
 */
 
@@ -25,10 +27,8 @@
  * If you want to test ESP32-S2 and/or ESP32-C3 through the board manager, please use the development release link: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json and install the latest 2.0.0 version.
 */
 
-#define LED_COUNT 60
 #define LED_PIN 3
 #define REFRESH_RATE 1000
-#define TOPIC "tycho/60" // MQTT Topic
 #define MAX_MQTT_MESSAGE_LENGTH 20000
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);

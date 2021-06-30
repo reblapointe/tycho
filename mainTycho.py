@@ -1,23 +1,28 @@
-# install pipenv (for dev environment)
-#python3 -m pip install --user pipenv
+# IN DEV ENV :
+#    install pipenv (for dev environment)
+#        python3 -m pip install --user pipenv
+#    install all packages (for dev environment) and export to requirements.txt
+#        pipenv install requests (....)
+#        pipenv lock -r > requirements.txt
+#
+# INSTALL
+#     load requirements
+#         pip3 install -r requirements.txt
+#
+# RUN
+#    python3 mainTycho.py
+#    or (no hangup)
+#    python3 mainTycho.py
 
-# install all packages (for dev environment)
-#pipenv install requests (....)
-
-# load requirements (before running, on new install, w or w/o pipenv)
-#pipenv lock -r > requirements.txt
-
-# Run app no hanup (termine pas même après logout)
-# nohup python3 tychoConsole.py
+# START MQTT BROKER
+#     mosquitto -d
+# VIEW MQTT TOPIC
+#     mosquitto_sub -h 192.168.1.100 -t tycho/60
 
 import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
 
-#Start broker : mosquitto -d
-#View topic :
-# mosquitto_sub -h 192.168.1.101 -t tycho/6
-
-params = {}# simulation parameters
-client = 0# mqtt client
+params = {}   # simulation parameters
+client = 0    # mqtt client
 
 def paramsDefault(paramName, default) :
     global params
@@ -54,6 +59,9 @@ def initParams() :
     paramsDefault('nbLeds', 60)
     paramsDefault('secondsBetweenRefresh', 60)
     paramsDefault('standingOnPole', 'north')
+    paramsDefault('led_topic', 'tycho/' + str(params['nbLeds']))
+    paramsDefault('json_topic', 'tycho/json/' + str(params['nbLeds']))
+    
     params['standingOnPole'] = 1 if params['standingOnPole'] == 'south' else -1 
     if params['secondsBetweenRefresh'] < 10 : params['secondsBetweenRefresh'] = 60
 
@@ -63,9 +71,9 @@ def initParams() :
         b['led'] = {}
         for i in range(0, params['nbLeds']) : b['led'][i] = 0
 
-def publish(s:str) :
+def publish(channel:str, s:str) :
     if 'mqtt_ip' in params : 
-        ret = client.publish('tycho/' + str(params['nbLeds']), s, retain = True)
+        ret = client.publish(channel, s, retain = True)
 
 
 def rgbfy(c):
@@ -141,7 +149,8 @@ def loop() :
                     ticks = params['nbLeds'],
                     pole = params['standingOnPole'])
         writeStateOfLights()
-        publish(buildLEDRing())
+        publish(params['led_topic'], buildLEDRing())
+        publish(params['json_topic'], json.dumps(params['bodies']))
         time.sleep(params['secondsBetweenRefresh'])
 
 def setup() :

@@ -8,6 +8,7 @@ Open `userSettings.json`.
 - enter desired longitude and latitude (default 0, 0)
 - enter number of leds of your device (up to 360, default 60)
 - enter mqtt broker ip address and port (required for neopixel, but not for console mode)
+- enter mqtt topics (default tycho/60 and tycho/json/60)
 - enter brightness (0 to 100, default 25)
 - chose pole 
   - north or south, default north. Determines if the lights go clockwise or counter clockwise
@@ -41,7 +42,10 @@ Follow Quick Start instructions
 
 ### Neopixel ring
 - setup ring with controller as shown in [drawing](circuit.png).
-- set SSID, password, ip address and port of the mqtt broker in new file sketch_LedRing/wifiParams.h as detailed in [sketch](sketch_LedRing/sketchLedRing.ino)
+- Create new file sketch_LedRing/wifiParams.h as detailed in [sketch](sketch_LedRing/sketchLedRing.ino) to set :
+  - SSID and password,
+  - ip address, port and channel of the mqtt broker
+  - Number of LEDS
 - flash to microcontroller (I use Arduino IDE)
 
 The first LED corresponds to the longitude provided by the user
