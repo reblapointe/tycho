@@ -4,6 +4,7 @@
     "nbLeds" : 60,
     "mqtt_ip" : "192.168.1.100",
     "mqtt_port" : 1883,
+    "brightness" : 10,
     "standingOnPole" : "north",
     "secondsBetweenRefresh" : 60,
     "bodies" : [
@@ -19,7 +20,7 @@
 	    "name" : "Moon",
 	    "horizonNumber" : 301,
 	    "scope" : 2,
-	    "r" : 0,
+	    "r" : 255,
 	    "g" : 0,
 	    "b" : 255
 	},

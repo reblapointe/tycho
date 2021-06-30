@@ -48,7 +48,7 @@ def initParams() :
     
     with open('userSettings.json') as f :
         params = json.load(f)
-
+    paramsDefault('brightness', 25)
     paramsDefault('latitude', 0)
     paramsDefault('longitude', 0)
     paramsDefault('nbLeds', 60)
@@ -66,6 +66,7 @@ def initParams() :
 def publish(s:str) :
     if 'mqtt_ip' in params : 
         ret = client.publish('tycho/' + str(params['nbLeds']), s, retain = True)
+
 
 def rgbfy(c):
     if c > 255 : c = 255
@@ -99,6 +100,27 @@ def writeStateOfLights(date = datetime.datetime.now()) :
                 print(' ', end = '') 
         print('|')
 
+def buildLEDRing() :
+    strip = ''
+    dim = params['brightness'] / 100.0
+    for i in range(0, params['nbLeds'])  :
+        r = 0
+        g = 0
+        b = 0
+        for body in params['bodies'] :
+            if (body['scope'] == 2 and body['led'][i] == 1) :
+                r += (body['r'] / 5) % 256
+                g += (body['g'] / 5) % 256
+                b += (body['b'] / 5) % 256
+    
+        for body in params['bodies'] :
+            if (body['led'][i] == 2) :
+                r = body['r']
+                g = body['g']
+                b = body['b']
+        strip += str(int(r * dim)) + ' ' + str(int(g * dim)) + ' ' + str(int(b * dim)) + ' '
+    return strip
+
 def loop() :
     print('LOOP')
     tycho.printLongitudes(params['nbLeds'], params['latitude'], params['longitude'], params['standingOnPole'])
@@ -118,9 +140,8 @@ def loop() :
                     latitude = params['latitude'],
                     ticks = params['nbLeds'],
                     pole = params['standingOnPole'])
-        writeStateOfLights(date = datetime.datetime.now())
-        couleursJson = json.dumps(params['bodies'])
-        publish(couleursJson)
+        writeStateOfLights()
+        publish(buildLEDRing())
         time.sleep(params['secondsBetweenRefresh'])
 
 def setup() :
