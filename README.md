@@ -3,13 +3,13 @@ Personal project showing transits of celestial bodies for a given latitude on a 
 
 ## Material
 
+- Raspberry pi (or any computer)
 - Neopixel ring (or ws2812b ring)
 - microcontroller w/ wifi (I tested with esp8266 and esp32s2)
-- raspberry pi (any computer will do)
 - 1000μF capacitor
 - 440Ω resistor
 - 5V-3.3V bidirectionnal logic Level shifter
-- 5V, 5A Power supply (as explained in [Adafruit's neopixel überguide](https://learn.adafruit.com/adafruit-neopixel-uberguide/powering-neopixels)
+- 5V, 5A Power supply (as explained in [Adafruit's Neopixel Überguide](https://learn.adafruit.com/adafruit-neopixel-uberguide/powering-neopixels)
 
 ## Quick start
 ### Mosquitto broker
@@ -19,8 +19,7 @@ Start a mosquitto broker. You can [install mosquitto](https://randomnerdtutorial
 Open `userSettings.json`.
 - enter desired longitude and latitude (default 0, 0)
 - enter number of leds of your device (up to 360, default 60)
-- enter mqtt broker ip address and port 
-  - required for neopixel, but not for console mode
+- enter mqtt broker ip address and port (required for neopixel, but not for console mode)
 - enter brightness (0 to 100, default 25)
 - chose pole 
   - north or south, default north. Determines if the lights go clockwise or counter clockwise
