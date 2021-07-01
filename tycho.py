@@ -36,8 +36,10 @@ def deleteOldHorizonFiles(date) :
 # ne pas paralléliser. La NASA veut pas.
 def loadHorizonFile(body, latitude, longitude, date):
     time.sleep(1) # rilaxe un peu
-    debut = date.replace(hour = 0, minute = 0, day = 1) - datetime.timedelta(minutes = 4)
-    fin = debut + relativedelta(months=+1) + datetime.timedelta(minutes = 4)
+    debut = date.replace(hour = 0, minute = 0, day = 1)
+    fin = debut + relativedelta(months=+1)
+    debut -= datetime.timedelta(minutes = 2)
+    fin += datetime.timedelta(minutes = 2)
     url = ('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&'
            'COMMAND=\'' + str(body) + '\'&'
            'CENTER=\'coord@399\'&'
@@ -49,7 +51,7 @@ def loadHorizonFile(body, latitude, longitude, date):
            debut.strftime('%H:%M') + '\'&'
            'STOP_TIME=\'' + fin.strftime('%Y-%m-%d') + '%20' +
            fin.strftime('%H:%M') + '\'&'
-           'STEP_SIZE=\'4%20m\'&'
+           'STEP_SIZE=\'1%20m\'&'
            'CAL_FORMAT=\'CAL\'&'
            'TIME_DIGITS=\'MINUTES\'&'
            'ANG_FORMAT=\'HMS\'&'

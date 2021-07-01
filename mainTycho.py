@@ -140,7 +140,7 @@ def loop() :
                     longitude = params['longitude'],
                     latitude = params['latitude'],
                     ticks = params['nbLeds'],
-                    date = datetime.datetime.utcnow(),
+                    date = datetime.datetime.utcnow().replace(day = 31),
                     pole = params['standingOnPole'])
             else : # ISS
                 b['led'] = tycho.issVisibilityAroundEarth(
