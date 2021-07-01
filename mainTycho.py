@@ -19,7 +19,7 @@
 # VIEW MQTT TOPIC
 #     mosquitto_sub -h 192.168.1.100 -t tycho/60
 
-import json, tycho, time, datetime, threading, sys, paho.mqtt.client as paho
+import json, tycho, time, datetime, threading, paho.mqtt.client as paho
 
 params = {}   # simulation parameters
 client = 0    # mqtt client
@@ -157,9 +157,7 @@ def setup() :
     print('SETUP')
     initParams()
     initMQTT()
-    if len(sys.argv) > 1 :
-        threading.Thread(target = led.allumer, args=(params['bodies'],)).start()
-
+    
 setup()
 loop()
 

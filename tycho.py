@@ -148,9 +148,9 @@ def bodyVisibility(body,
     for s in bodyStates :
         if s < tickBegins :
             lastState = bodyStates[s]
-        if tickBegins <= s <= tickEnds :
+        if tickBegins <= s < tickEnds :
             state = bodyStates[s]
-        elif s > tickEnds and nextState == '' :
+        elif s >= tickEnds and nextState == '' :
             nextState = bodyStates[s]
     if lastState != '' :
         if lastState == transits or lastState == rises :
