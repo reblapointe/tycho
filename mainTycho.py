@@ -19,7 +19,7 @@
 # VIEW MQTT TOPIC
 #     mosquitto_sub -h 192.168.1.100 -t tycho/60
 
-import json, tycho, time, datetime, threading, paho.mqtt.client as paho
+import json, tycho, time, datetime, threading, paho.mqtt.client as paho, os
 
 params = {}   # simulation parameters
 client = 0    # mqtt client
@@ -90,7 +90,6 @@ def printRGBBlock(r, g, b):
           'm\u25a0\033[0m', end = '')
 
 def writeStateOfLights(date = datetime.datetime.now()) :
-    print()
     print(date.strftime('%Y-%m-%d %H:%M'))
     nameWidth = 1    
     for b in params['bodies'] :
@@ -131,21 +130,23 @@ def buildLEDRing() :
 
 def loop() :
     print('LOOP')
-    tycho.printLongitudes(params['nbLeds'], params['latitude'], params['longitude'], params['standingOnPole'])
+    tycho.printLongitudesPoleWise(params['nbLeds'],
+                                  longitude = params['longitude'],
+                                  pole = params['standingOnPole'])
     while True:
         for b in params['bodies'] :
             if 'horizonNumber' in b.keys() :
                 b['led'] = tycho.bodyVisibilityAroundEarth(
                     body = b['horizonNumber'],
-                    longitude = params['longitude'],
                     latitude = params['latitude'],
+                    longitude = params['longitude'],
                     ticks = params['nbLeds'],
                     date = datetime.datetime.utcnow(),
                     pole = params['standingOnPole'])
             else : # ISS
                 b['led'] = tycho.issVisibilityAroundEarth(
-                    longitude = params['longitude'],
                     latitude = params['latitude'],
+                    longitude = params['longitude'],
                     ticks = params['nbLeds'],
                     pole = params['standingOnPole'])
         writeStateOfLights()
@@ -160,24 +161,25 @@ def setup() :
 
 def demo() :
     print('DEMO')
-    tycho.printLongitudes(params['nbLeds'], params['latitude'], params['longitude'], params['standingOnPole'])
-
     d = datetime.datetime.utcnow().replace(day = 1, hour = 0, minute = 0, second = 0)
-    for i in range(0, 31 * 24):
-        d = d + datetime.timedelta(hours = i)
+    nextMonth = d.replace(day = 28) + datetime.timedelta(days = 4)
+    nbDays = (nextMonth - datetime.timedelta(days = nextMonth.day)).day
+    for i in range(0,  (nbDays - 1) * 24 - 1) :
+        d = d + datetime.timedelta(hours = 1)
         for b in params['bodies'] :
             if 'horizonNumber' in b.keys() :
                 b['led'] = tycho.bodyVisibilityAroundEarth(
                     body = b['horizonNumber'],
-                    longitude = params['longitude'],
                     latitude = params['latitude'],
+                    longitude = params['longitude'],
                     ticks = params['nbLeds'],
                     date = d,
                     pole = params['standingOnPole'])
+        os.system('clear')
+        print('UTC ', end = '')
         writeStateOfLights(d)
         time.sleep(0.01)
 
-    
 setup()
 demo()
 loop()

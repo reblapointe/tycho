@@ -13,7 +13,7 @@ maxi = 2
 off = 0
 on = 1
 
-bodyStates = {}
+statesOfBodiesAroundLat = {}
 
 def readHorizonDateTime(s) :
     return datetime.datetime.strptime(s, '%Y-%b-%d %H:%M')
@@ -28,25 +28,25 @@ def horizonFileExists(body, latitude, longitude, date):
                                           latitude = latitude,
                                           longitude = longitude,
                                           date = date))
+
 def deleteOldHorizonFiles(date) :    
     files = glob.glob("horizonFiles/*.txt")
     for f in files :
         try :
-            dateFile = datetime.datetime.strptime(f[len(f)-11:len(f)-4], '%Y-%m')   # ends with 2021-06.txt
-            #dateFile = dateFile.replace(hour = 0, minute = 0, day = 1)
+            dateFile = datetime.datetime.strptime(f[len(f)-11:len(f)-4], '%Y-%m')
+            # ends with 2021-06.txt
             if dateFile < (date - relativedelta(months=+2)) :
                 os.remove(f)
                 print(f + ' deleted')
         except Exception as e :
             pass
+bodyStates = {}
 
 # ne pas paralléliser. La NASA veut pas.
-def loadHorizonFile(body, latitude, longitude, date):
+def downloadHorizonFile(body, latitude, longitude, date):
     time.sleep(1) # rilaxe un peu
     debut = date.replace(hour = 0, minute = 0, day = 1)
-    fin = debut + relativedelta(months=+1)
-    debut -= datetime.timedelta(minutes = 2)
-    fin += datetime.timedelta(minutes = 2)
+    fin = debut + relativedelta(months = +1)
     url = ('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&'
            'COMMAND=\'' + str(body) + '\'&'
            'CENTER=\'coord@399\'&'
@@ -100,70 +100,27 @@ def capLongitude(l) :
     if l < -180 : return l + 360
     if l > 180 : return l - 360
     return l;
-    
-def printLongitudes(nbTicks, lat, lon, pole = -1) :
+
+def printLongitudesPoleWise(nbTicks, longitude, pole = -1) :
+    # North : descending. South : ascending
     delta = 360 / nbTicks / 2
     for i in range(0, nbTicks) :
-        actuelle = float(lon) + pole * i * 360 / nbTicks
+        actuelle = float(longitude) + pole * i * 360 / nbTicks
         precedente = capLongitude(int(actuelle - delta))
         suivante = capLongitude(int(actuelle + delta))
         print(str(precedente) + '->' + str(suivante), end = ',')
     print()
-                
-def loadISSAPI():
+
+def downloadISSAPI():
     url = 'http://api.open-notify.org/iss-now.json'
     response = requests.get(url)
     params = json.loads(response.text)
     lat = params['iss_position']['latitude']
     lon = params['iss_position']['longitude']
     return (lat, lon)    
-    
-def readHorizonFile(body, latitude, longitude, date) :
-    states = {}
-    deleteOldHorizonFiles(datetime.datetime.now())
-    
-    with open(horizonFileName(body, latitude, longitude, date)) as f :
-        for num, line in enumerate(f) :
-            try :
-                states[num] = {}
-                states[num]['date'] = readHorizonDateTime(line[1:18])
-                states[num]['state'] = line[20]
-            except Exception as e :
-                print(str(e))
-    return states
 
-def bodyVisibility(body,
-                   longitude, latitude,
-                   ticks,
-                   date):
-    global bodyStates
-    while not horizonFileExists(body, longitude = longitude, latitude = latitude, date = date):
-        loadHorizonFile(body, longitude = longitude, latitude = latitude, date = date)
-    if body not in bodyStates :
-        bodyStates[body] = {}
-    if latitude not in bodyStates[body] :
-        bodyStates[body][latitude] = {}
-    if longitude not in bodyStates[body][latitude] :
-        bodyStates[body][latitude][longitude] = readHorizonFile(
-            body = body, latitude = latitude,
-            longitude = longitude, date = date)
-    lastState = ''
-    state = ''
-    nextState = ''
-    tickBegins = date - datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
-    tickEnds = date + datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
-
+def determineVisibilityFromStatesAroundDate(lastState, state, nextState) :
     visibility = off
-    states = bodyStates[body][latitude]
-    for k in states[longitude] :
-        d = states[longitude][k]['date']
-        s = states[longitude][k]['state']
-        if d < tickBegins :
-            lastState = s
-        if tickBegins <= d < tickEnds :
-            state = s
-        elif d >= tickEnds and nextState == '' :
-            nextState = s
     if lastState != '' :
         if lastState == transits or lastState == rises :
             visibility = on
@@ -174,30 +131,77 @@ def bodyVisibility(body,
     elif (state == '' and lastState == '' and
         (nextState == transits or nextState == sets)) :
         visibility = on
-    
-    return(visibility)
+    return visibility
 
-def bodyVisibilityAroundEarth(body, longitude, latitude,
-                              ticks, date = datetime.datetime.utcnow(), pole = -1) :
+def loadBodyStatesIfNotAlreadyLoaded(body, latitude, longitude, date) :
+    global statesOfBodiesAroundLat
+    if body not in statesOfBodiesAroundLat :
+        statesOfBodiesAroundLat[body] = {}
+        
+    if (longitude not in statesOfBodiesAroundLat[body] or
+        (statesOfBodiesAroundLat[body][longitude][0]['date'].month != date.month)) :
+        
+        statesOfBodiesAroundLat[body][longitude] = {}
+
+        while not horizonFileExists(body,
+                                    latitude = latitude, longitude = longitude,
+                                    date = date):
+            downloadHorizonFile(body,
+                                latitude = latitude, longitude = longitude,
+                                date = date)
+            deleteOldHorizonFiles(datetime.datetime.now())
+            
+        with open(horizonFileName(body, latitude, longitude, date)) as f :
+            for num, line in enumerate(f) :
+                statesOfBodiesAroundLat[body][longitude][num] = {}
+                statesOfBodiesAroundLat[body][longitude][num]['date'] = readHorizonDateTime(line[1:18])
+                statesOfBodiesAroundLat[body][longitude][num]['state'] = line[20]
+    
+def bodyVisibilityAtLongitude(body,
+                   latitude, longitude,
+                   ticks, date):
+    lastState = ''
+    state = ''
+    nextState = ''
+    tickBegins = date - datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
+    tickEnds = date + datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
+
+    states = statesOfBodiesAroundLat[body][longitude] 
+    for k in states : # Un personne intelligente ferait un binary search
+        d = states[k]['date']
+        s = states[k]['state']
+        if d < tickBegins :
+            lastState = s
+        if tickBegins <= d < tickEnds :
+            state = s
+        elif d >= tickEnds and nextState == '' :
+            nextState = s
+    return determineVisibilityFromStatesAroundDate(lastState, state, nextState)
+
+def bodyVisibilityAroundEarth(body, latitude, longitude, 
+                              ticks, date = datetime.datetime.utcnow(),
+                              pole = -1) :
     visibilities = {}
     for i in range(0, ticks) :
         nextLong = capLongitude(longitude + pole * int((360 / ticks * i)))
-        if nextLong > 180 : nextLong -= 360
-        visibilities[i] = bodyVisibility(body = body,
-                                         longitude = nextLong,
+        loadBodyStatesIfNotAlreadyLoaded(body,
                                          latitude = latitude,
+                                         longitude = nextLong,
+                                         date = date)
+        visibilities[i] = bodyVisibilityAtLongitude(body = body,
+                                         latitude = latitude,
+                                         longitude = nextLong,
                                          ticks = ticks,
                                          date = date)
-    #print(visibilities)
     return visibilities
 
-def issVisibilityAroundEarth(longitude, latitude, ticks, pole = -1):
+def issVisibilityAroundEarth(latitude, longitude, ticks, pole = -1):
     visibilities = {}
     
     for i in range(0, ticks) :
         visibilities[i] = off
     try :
-        (latISS, lonISS) = loadISSAPI()
+        (latISS, lonISS) = downloadISSAPI()
         delta = 360 / ticks / 2
         # changer la direction pour pole nord
         for i in range(0, ticks) :
