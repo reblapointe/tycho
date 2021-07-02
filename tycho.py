@@ -12,7 +12,9 @@ transits = 't'
 maxi = 2
 off = 0
 on = 1
-  
+
+bodyStates = {}
+
 def readHorizonDateTime(s) :
     return datetime.datetime.strptime(s, '%Y-%b-%d %H:%M')
 
@@ -21,6 +23,11 @@ def horizonFileName(body, latitude, longitude, date):
             'lat' + str(latitude) + 'long'+ str(longitude) +
             'date' + date.strftime('%Y-%m') + '.txt')
 
+def horizonFileExists(body, latitude, longitude, date):
+    return os.path.exists(horizonFileName(body = body,
+                                          latitude = latitude,
+                                          longitude = longitude,
+                                          date = date))
 def deleteOldHorizonFiles(date) :    
     files = glob.glob("horizonFiles/*.txt")
     for f in files :
@@ -112,48 +119,51 @@ def loadISSAPI():
     return (lat, lon)    
     
 def readHorizonFile(body, latitude, longitude, date) :
-    bodyStates = {}
-    filename  = horizonFileName(body = body,
-                                latitude = latitude,
-                                longitude = longitude,
-                                date = date)
-    while not os.path.exists(filename):
-        loadHorizonFile(body = body,
-                        latitude = latitude,
-                        longitude = longitude,
-                        date = date)
-        deleteOldHorizonFiles(datetime.datetime.now())
-    with open(filename) as f :
+    states = {}
+    deleteOldHorizonFiles(datetime.datetime.now())
+    
+    with open(horizonFileName(body, latitude, longitude, date)) as f :
         for num, line in enumerate(f) :
             try :
-                date = readHorizonDateTime(line[1:18])
-                bodyStates[date] = line[20]
+                states[num] = {}
+                states[num]['date'] = readHorizonDateTime(line[1:18])
+                states[num]['state'] = line[20]
             except Exception as e :
                 print(str(e))
-    return bodyStates
+    return states
 
 def bodyVisibility(body,
                    longitude, latitude,
                    ticks,
                    date):
-
-    bodyStates = readHorizonFile(
-        body = body, latitude = latitude,
-        longitude = longitude, date = date)
+    global bodyStates
+    while not horizonFileExists(body, longitude = longitude, latitude = latitude, date = date):
+        loadHorizonFile(body, longitude = longitude, latitude = latitude, date = date)
+    if body not in bodyStates :
+        bodyStates[body] = {}
+    if latitude not in bodyStates[body] :
+        bodyStates[body][latitude] = {}
+    if longitude not in bodyStates[body][latitude] :
+        bodyStates[body][latitude][longitude] = readHorizonFile(
+            body = body, latitude = latitude,
+            longitude = longitude, date = date)
     lastState = ''
     state = ''
     nextState = ''
-    visibility = off
     tickBegins = date - datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
     tickEnds = date + datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
-    
-    for s in bodyStates :
-        if s < tickBegins :
-            lastState = bodyStates[s]
-        if tickBegins <= s < tickEnds :
-            state = bodyStates[s]
-        elif s >= tickEnds and nextState == '' :
-            nextState = bodyStates[s]
+
+    visibility = off
+    states = bodyStates[body][latitude]
+    for k in states[longitude] :
+        d = states[longitude][k]['date']
+        s = states[longitude][k]['state']
+        if d < tickBegins :
+            lastState = s
+        if tickBegins <= d < tickEnds :
+            state = s
+        elif d >= tickEnds and nextState == '' :
+            nextState = s
     if lastState != '' :
         if lastState == transits or lastState == rises :
             visibility = on
@@ -164,7 +174,7 @@ def bodyVisibility(body,
     elif (state == '' and lastState == '' and
         (nextState == transits or nextState == sets)) :
         visibility = on
-
+    
     return(visibility)
 
 def bodyVisibilityAroundEarth(body, longitude, latitude,
@@ -178,6 +188,7 @@ def bodyVisibilityAroundEarth(body, longitude, latitude,
                                          latitude = latitude,
                                          ticks = ticks,
                                          date = date)
+    #print(visibilities)
     return visibilities
 
 def issVisibilityAroundEarth(longitude, latitude, ticks, pole = -1):

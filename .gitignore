@@ -1,6 +1,5 @@
 __pycache__/
 horizonFiles/
-!horizonFiles/trace 
 sketch_LedRing/wifiParams.h
 sketch_LedRing/private/*
 *~

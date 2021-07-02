@@ -140,7 +140,7 @@ def loop() :
                     longitude = params['longitude'],
                     latitude = params['latitude'],
                     ticks = params['nbLeds'],
-                    date = datetime.datetime.utcnow().replace(day = 31),
+                    date = datetime.datetime.utcnow(),
                     pole = params['standingOnPole'])
             else : # ISS
                 b['led'] = tycho.issVisibilityAroundEarth(
@@ -157,8 +157,29 @@ def setup() :
     print('SETUP')
     initParams()
     initMQTT()
+
+def demo() :
+    print('DEMO')
+    tycho.printLongitudes(params['nbLeds'], params['latitude'], params['longitude'], params['standingOnPole'])
+
+    d = datetime.datetime.utcnow().replace(day = 1, hour = 0, minute = 0, second = 0)
+    for i in range(0, 31 * 24):
+        d = d + datetime.timedelta(hours = i)
+        for b in params['bodies'] :
+            if 'horizonNumber' in b.keys() :
+                b['led'] = tycho.bodyVisibilityAroundEarth(
+                    body = b['horizonNumber'],
+                    longitude = params['longitude'],
+                    latitude = params['latitude'],
+                    ticks = params['nbLeds'],
+                    date = d,
+                    pole = params['standingOnPole'])
+        writeStateOfLights(d)
+        time.sleep(0.01)
+
     
 setup()
+demo()
 loop()
 
 
