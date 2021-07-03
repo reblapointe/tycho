@@ -7,7 +7,7 @@ maxi = 2
 off = 0
 on = 1
 
-statesOfBodiesAroundLat = {}
+rts = {}
 
 def horizonFileName(body, latitude, longitude, date):
     return ('horizonFiles/body' + str(body) +
@@ -66,15 +66,15 @@ def determineVisibilityFromStatesAroundDate(lastState, currentState, nextState) 
         visibility = on
     return visibility
 
-def loadBodyStatesIfNotAlreadyLoaded(body, latitude, longitude, date) :
-    global statesOfBodiesAroundLat
-    if body not in statesOfBodiesAroundLat :
-        statesOfBodiesAroundLat[body] = {}
+def loadRTSIfNotAlreadyLoaded(body, latitude, longitude, date) :
+    global rts
+    if body not in rts :
+        rts[body] = {}
         
-    if (longitude not in statesOfBodiesAroundLat[body] or
-        (statesOfBodiesAroundLat[body][longitude][0]['date'].month != date.month)) :
+    if (longitude not in rts[body] or
+        (rts[body][longitude][0]['date'].month != date.month)) :
         
-        statesOfBodiesAroundLat[body][longitude] = {}
+        rts[body][longitude] = {}
         fileName = horizonFileName(body,
                                    latitude = latitude, longitude = longitude,
                                    date = date)
@@ -87,10 +87,9 @@ def loadBodyStatesIfNotAlreadyLoaded(body, latitude, longitude, date) :
             
         with open(horizonFileName(body, latitude, longitude, date)) as f :
             for num, line in enumerate(f) :
-                statesOfBodiesAroundLat[body][longitude][num] = {}
-                statesOfBodiesAroundLat[body][longitude][num]['date'] = horizonJPLLoader.readHorizonDateTime(line[1:18])
-                statesOfBodiesAroundLat[body][longitude][num]['state'] = line[20]
-    
+                rts[body][longitude][num] = {}
+                rts[body][longitude][num]['date'] = horizonJPLLoader.readHorizonDateTime(line[1:18])
+                rts[body][longitude][num]['state'] = line[20]
 
 def around(states, i, step) :
     last = ''
@@ -98,48 +97,42 @@ def around(states, i, step) :
         last = states[i + step]['state']
     return last
 
-def statesAroundDateBinarySearch(states, low, high, dateMin, dateMax) :
+def statesAroundDateBinarySearch(states, low, high, mini, maxi) :
     if high >= low:
-        mid = (high + low) // 2
- 
-        # If element is present at the middle itself
-        if dateMin <= states[mid]['date'] <= dateMax:
-            return (around(states, mid, -1), states[mid]['state'], around(states, mid, 1))
- 
-        elif states[mid]['date'] > dateMax:
-            return statesAroundDateBinarySearch(states, low, mid - 1, dateMin, dateMax)
-
-        # Else the element can only be present in right subarray
+        mid = (high + low) // 2 # floor
+        if mini <= states[mid]['date'] <= maxi:
+            return (around(states, mid, -1), states[mid]['state'], around(states, mid, 1)) 
+        elif states[mid]['date'] > maxi:
+            return statesAroundDateBinarySearch(states, low, mid - 1, mini, maxi)
         else:
-            return statesAroundDateBinarySearch(states, mid + 1, high, dateMin, dateMax)
- 
+            return statesAroundDateBinarySearch(states, mid + 1, high, mini, maxi)
     else:
         return (around(states, low, -1), '', around(states, high, 1))
     
-def bodyVisibilityAtLongitude(body, latitude, longitude, ticks, date):
-    tickBegins = date - datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
-    tickEnds = date + datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
+def visibilityAtLongitude(body, latitude, longitude, ticks, date):
+    mini = date - datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
+    maxi = date + datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
+    
+    (l, c, n) = statesAroundDateBinarySearch(rts[body][longitude],
+                                             0, len(rts[body][longitude]),
+                                             mini, maxi)
+    return determineVisibilityFromStatesAroundDate(l, c, n)
 
-    (lastState, currentState, nextState) = statesAroundDateBinarySearch(statesOfBodiesAroundLat[body][longitude],
-                                                                        0, len(statesOfBodiesAroundLat[body][longitude]),
-                                                                        tickBegins, tickEnds)
-    return determineVisibilityFromStatesAroundDate(lastState, currentState, nextState)
-
-def bodyVisibilityAroundEarth(body, latitude, longitude, 
+def visibilityAroundEarth(body, latitude, longitude, 
                               ticks, date = datetime.datetime.utcnow(),
                               pole = -1) :
     visibilities = {}
     for i in range(0, ticks) :
         nextLong = capLongitude(longitude + pole * int((360 / ticks * i)))
-        loadBodyStatesIfNotAlreadyLoaded(body,
-                                         latitude = latitude,
-                                         longitude = nextLong,
-                                         date = date)
-        visibilities[i] = bodyVisibilityAtLongitude(body = body,
-                                         latitude = latitude,
-                                         longitude = nextLong,
-                                         ticks = ticks,
-                                         date = date)
+        loadRTSIfNotAlreadyLoaded(body,
+                                  latitude = latitude,
+                                  longitude = nextLong,
+                                  date = date)
+        visibilities[i] = visibilityAtLongitude(body = body,
+                                                latitude = latitude,
+                                                longitude = nextLong,
+                                                ticks = ticks,
+                                                date = date)
     return visibilities
 
 def issVisibilityAroundEarth(latitude, longitude, ticks, pole = -1):

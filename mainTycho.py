@@ -136,7 +136,7 @@ def loop() :
     while True:
         for b in params['bodies'] :
             if 'horizonNumber' in b.keys() :
-                b['led'] = tycho.bodyVisibilityAroundEarth(
+                b['led'] = tycho.visibilityAroundEarth(
                     body = b['horizonNumber'],
                     latitude = params['latitude'],
                     longitude = params['longitude'],
@@ -168,7 +168,7 @@ def demo() :
         d = d + datetime.timedelta(hours = 1)
         for b in params['bodies'] :
             if 'horizonNumber' in b.keys() :
-                b['led'] = tycho.bodyVisibilityAroundEarth(
+                b['led'] = tycho.visibilityAroundEarth(
                     body = b['horizonNumber'],
                     latitude = params['latitude'],
                     longitude = params['longitude'],

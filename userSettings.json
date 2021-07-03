@@ -1,5 +1,5 @@
 {
-    "latitude" : -72,
+    "latitude" : 48,
     "longitude" : -71,
     "nbLeds" : 60,
     "mqtt_ip" : "192.168.1.100",
@@ -35,7 +35,7 @@
 	{
 	    "name" : "Venus",
 	    "horizonNumber" : 299,
-	    "scope" : 0,
+	    "scope" : 1,
 	    "r" : 255,
 	    "g" : 255,
 	    "b" : 0
@@ -43,7 +43,7 @@
 	{
 	    "name" : "Mars",
 	    "horizonNumber" : 499,
-	    "scope" : 0,
+	    "scope" : 1,
 	    "r" : 255,
 	    "g" : 0,
 	    "b" : 0
