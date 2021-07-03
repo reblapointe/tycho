@@ -19,7 +19,7 @@
 # VIEW MQTT TOPIC
 #     mosquitto_sub -h 192.168.1.100 -t tycho/60
 
-import json, tycho, time, datetime, threading, paho.mqtt.client as paho, os
+import json, tycho, time, datetime, threading, paho.mqtt.client as paho, os, sys
 
 params = {}   # simulation parameters
 client = 0    # mqtt client
@@ -40,7 +40,7 @@ def initMQTT() :
         if 'mqtt_ip' in params :
             paramsDefault('mqtt_port', 1883)
             client = paho.Client()
-            client.on_publish = on_publish
+            #client.on_publish = on_publish
             client.connect(params['mqtt_ip'], params['mqtt_port'], 3600)
             print('mqtt broker ' + params['mqtt_ip'] + ':' + str(params['mqtt_port']))
         else :
@@ -178,10 +178,11 @@ def demo() :
         os.system('clear')
         print('UTC ', end = '')
         writeStateOfLights(d)
-        time.sleep(0.01)
+        time.sleep(0.015)
 
 setup()
-demo()
+if len(sys.argv) > 1 :
+    demo()
 loop()
 
 

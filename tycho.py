@@ -1,33 +1,18 @@
-import time, datetime, os, requests, glob, json
+import time, datetime, os, requests, glob, horizonJPLLoader, json
 from dateutil.relativedelta import relativedelta
 
 # all time in UTC
 
-beginning = "$$SOE"
-ending = "$$EOE"
-
-sets = 's'
-rises = 'r'
-transits = 't'
 maxi = 2
 off = 0
 on = 1
 
 statesOfBodiesAroundLat = {}
 
-def readHorizonDateTime(s) :
-    return datetime.datetime.strptime(s, '%Y-%b-%d %H:%M')
-
 def horizonFileName(body, latitude, longitude, date):
     return ('horizonFiles/body' + str(body) +
             'lat' + str(latitude) + 'long'+ str(longitude) +
             'date' + date.strftime('%Y-%m') + '.txt')
-
-def horizonFileExists(body, latitude, longitude, date):
-    return os.path.exists(horizonFileName(body = body,
-                                          latitude = latitude,
-                                          longitude = longitude,
-                                          date = date))
 
 def deleteOldHorizonFiles(date) :    
     files = glob.glob("horizonFiles/*.txt")
@@ -40,58 +25,6 @@ def deleteOldHorizonFiles(date) :
                 print(f + ' deleted')
         except Exception as e :
             pass
-bodyStates = {}
-
-# ne pas paralléliser. La NASA veut pas.
-def downloadHorizonFile(body, latitude, longitude, date):
-    time.sleep(1) # rilaxe un peu
-    debut = date.replace(hour = 0, minute = 0, day = 1)
-    fin = debut + relativedelta(months = +1)
-    url = ('https://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1&'
-           'COMMAND=\'' + str(body) + '\'&'
-           'CENTER=\'coord@399\'&'
-           'COORD_TYPE=\'GEODETIC\'&'
-           'SITE_COORD=\'' + str(longitude) + ',' + str(latitude) + ',0\'&'
-           'MAKE_EPHEM=\'YES\'&'
-           'TABLE_TYPE=\'OBSERVER\'&'
-           'START_TIME=\'' + debut.strftime('%Y-%m-%d') + '%20' +
-           debut.strftime('%H:%M') + '\'&'
-           'STOP_TIME=\'' + fin.strftime('%Y-%m-%d') + '%20' +
-           fin.strftime('%H:%M') + '\'&'
-           'STEP_SIZE=\'1%20m\'&'
-           'CAL_FORMAT=\'CAL\'&'
-           'TIME_DIGITS=\'MINUTES\'&'
-           'ANG_FORMAT=\'HMS\'&'
-           'OUT_UNITS=\'KM-S\'&'
-           'RANGE_UNITS=\'AU\'&'
-           'APPARENT=\'AIRLESS\'&'
-           'SUPPRESS_RANGE_RATE=\'NO\'&'
-           'SKIP_DAYLT=\'NO\'&'
-           'EXTRA_PREC=\'NO\'&'
-           'REF_SYSTEM=\'J2000\'&'
-           'CSV_FORMAT=\'NO\'&'
-           'OBJ_DATA=\'NO\'&'
-           'QUANTITIES=\'10\'&' + 
-           'R_T_S_ONLY=\'TVH\'')
-    print(url)
-    try :
-        response = requests.get(url)
-        lines = response.text.split('\n')
-        f = open(horizonFileName(body = body,
-                                 latitude = latitude, longitude = longitude,
-                                 date = date), 'w')        
-        began = False
-        read = False
-        for line in lines :
-            if began : read = True
-            if beginning in line : began = True
-            if ending in line :
-                read = False
-                began = False
-            if read:
-                f.write(line + '\n')
-    except Exception as e :
-        print ('Erreur JPL Horizon')
 
 def isBetweenLongitudes(l, a, b) :
     return a <= l <= b or l <= b <= a or b <= a <= l
@@ -119,17 +52,17 @@ def downloadISSAPI():
     lon = params['iss_position']['longitude']
     return (lat, lon)    
 
-def determineVisibilityFromStatesAroundDate(lastState, state, nextState) :
+def determineVisibilityFromStatesAroundDate(lastState, currentState, nextState) :
     visibility = off
     if lastState != '' :
-        if lastState == transits or lastState == rises :
+        if lastState == horizonJPLLoader.transits or lastState == horizonJPLLoader.rises :
             visibility = on
-    if state == rises or state == sets  :
+    if currentState == horizonJPLLoader.rises or currentState == horizonJPLLoader.sets  :
         visibility = on
-    elif state == transits:
+    elif currentState == horizonJPLLoader.transits:
         visibility = maxi
-    elif (state == '' and lastState == '' and
-        (nextState == transits or nextState == sets)) :
+    elif (currentState == '' and lastState == '' and
+        (nextState == horizonJPLLoader.transits or nextState == horizonJPLLoader.sets)) :
         visibility = on
     return visibility
 
@@ -142,41 +75,55 @@ def loadBodyStatesIfNotAlreadyLoaded(body, latitude, longitude, date) :
         (statesOfBodiesAroundLat[body][longitude][0]['date'].month != date.month)) :
         
         statesOfBodiesAroundLat[body][longitude] = {}
-
-        while not horizonFileExists(body,
-                                    latitude = latitude, longitude = longitude,
-                                    date = date):
-            downloadHorizonFile(body,
-                                latitude = latitude, longitude = longitude,
-                                date = date)
+        fileName = horizonFileName(body,
+                                   latitude = latitude, longitude = longitude,
+                                   date = date)
+        while not os.path.exists(fileName) :
+            horizonJPLLoader.downloadHorizonFile(body,
+                                                 latitude = latitude, longitude = longitude,
+                                                 date = date,
+                                                 fileName = fileName)
             deleteOldHorizonFiles(datetime.datetime.now())
             
         with open(horizonFileName(body, latitude, longitude, date)) as f :
             for num, line in enumerate(f) :
                 statesOfBodiesAroundLat[body][longitude][num] = {}
-                statesOfBodiesAroundLat[body][longitude][num]['date'] = readHorizonDateTime(line[1:18])
+                statesOfBodiesAroundLat[body][longitude][num]['date'] = horizonJPLLoader.readHorizonDateTime(line[1:18])
                 statesOfBodiesAroundLat[body][longitude][num]['state'] = line[20]
     
-def bodyVisibilityAtLongitude(body,
-                   latitude, longitude,
-                   ticks, date):
-    lastState = ''
-    state = ''
-    nextState = ''
+
+def around(states, i, step) :
+    last = ''
+    if (i + step in states) :
+        last = states[i + step]['state']
+    return last
+
+def statesAroundDateBinarySearch(states, low, high, dateMin, dateMax) :
+    if high >= low:
+        mid = (high + low) // 2
+ 
+        # If element is present at the middle itself
+        if dateMin <= states[mid]['date'] <= dateMax:
+            return (around(states, mid, -1), states[mid]['state'], around(states, mid, 1))
+ 
+        elif states[mid]['date'] > dateMax:
+            return statesAroundDateBinarySearch(states, low, mid - 1, dateMin, dateMax)
+
+        # Else the element can only be present in right subarray
+        else:
+            return statesAroundDateBinarySearch(states, mid + 1, high, dateMin, dateMax)
+ 
+    else:
+        return (around(states, low, -1), '', around(states, high, 1))
+    
+def bodyVisibilityAtLongitude(body, latitude, longitude, ticks, date):
     tickBegins = date - datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
     tickEnds = date + datetime.timedelta(minutes = int(24 * 60 / (ticks * 2)))
 
-    states = statesOfBodiesAroundLat[body][longitude] 
-    for k in states : # Un personne intelligente ferait un binary search
-        d = states[k]['date']
-        s = states[k]['state']
-        if d < tickBegins :
-            lastState = s
-        if tickBegins <= d < tickEnds :
-            state = s
-        elif d >= tickEnds and nextState == '' :
-            nextState = s
-    return determineVisibilityFromStatesAroundDate(lastState, state, nextState)
+    (lastState, currentState, nextState) = statesAroundDateBinarySearch(statesOfBodiesAroundLat[body][longitude],
+                                                                        0, len(statesOfBodiesAroundLat[body][longitude]),
+                                                                        tickBegins, tickEnds)
+    return determineVisibilityFromStatesAroundDate(lastState, currentState, nextState)
 
 def bodyVisibilityAroundEarth(body, latitude, longitude, 
                               ticks, date = datetime.datetime.utcnow(),
@@ -196,14 +143,11 @@ def bodyVisibilityAroundEarth(body, latitude, longitude,
     return visibilities
 
 def issVisibilityAroundEarth(latitude, longitude, ticks, pole = -1):
-    visibilities = {}
-    
-    for i in range(0, ticks) :
-        visibilities[i] = off
+    visibilities = {}    
+    for i in range(0, ticks) : visibilities[i] = off
     try :
         (latISS, lonISS) = downloadISSAPI()
         delta = 360 / ticks / 2
-        # changer la direction pour pole nord
         for i in range(0, ticks) :
             actuelle = float(longitude) + pole * i * 360 / ticks
             precedente = capLongitude(int(actuelle - delta))
