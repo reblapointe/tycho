@@ -3,10 +3,18 @@ from dateutil.relativedelta import relativedelta
 
 # all time in UTC
 
-maxi = 2
-off = 0
-on = 1
+class visibility:
+    maxi = 2
+    off = 0
+    on = 1
 
+# Rise Transit and Set times
+class RTSTime :
+    def __init__(self, d, s) :
+        self.d = d
+        self.s = s
+
+# list of RTSTimes for body at latitude longitude
 rts = {}
 
 def horizonFileName(body, latitude, longitude, date):
@@ -53,18 +61,18 @@ def downloadISSAPI():
     return (lat, lon)    
 
 def determineVisibilityFromStatesAroundDate(lastState, currentState, nextState) :
-    visibility = off
+    v = visibility.off
     if lastState != '' :
         if lastState == horizonJPLLoader.transits or lastState == horizonJPLLoader.rises :
-            visibility = on
+            v = visibility.on
     if currentState == horizonJPLLoader.rises or currentState == horizonJPLLoader.sets  :
-        visibility = on
+        v = visibility.on
     elif currentState == horizonJPLLoader.transits:
-        visibility = maxi
+        v = visibility.maxi
     elif (currentState == '' and lastState == '' and
         (nextState == horizonJPLLoader.transits or nextState == horizonJPLLoader.sets)) :
-        visibility = on
-    return visibility
+        v = visibility.on
+    return v
 
 def loadRTSIfNotAlreadyLoaded(body, latitude, longitude, date) :
     global rts
@@ -72,7 +80,7 @@ def loadRTSIfNotAlreadyLoaded(body, latitude, longitude, date) :
         rts[body] = {}
         
     if (longitude not in rts[body] or
-        (rts[body][longitude][0]['date'].month != date.month)) :
+        (rts[body][longitude][0].d.month != date.month)) :
         
         rts[body][longitude] = {}
         fileName = horizonFileName(body,
@@ -87,22 +95,20 @@ def loadRTSIfNotAlreadyLoaded(body, latitude, longitude, date) :
             
         with open(horizonFileName(body, latitude, longitude, date)) as f :
             for num, line in enumerate(f) :
-                rts[body][longitude][num] = {}
-                rts[body][longitude][num]['date'] = horizonJPLLoader.readHorizonDateTime(line[1:18])
-                rts[body][longitude][num]['state'] = line[20]
+                rts[body][longitude][num] = RTSTime(horizonJPLLoader.readHorizonDateTime(line[1:18]), line[20])
 
 def around(states, i, step) :
     last = ''
     if (i + step in states) :
-        last = states[i + step]['state']
+        last = states[i + step].s
     return last
 
 def statesAroundDateBinarySearch(states, low, high, mini, maxi) :
     if high >= low:
         mid = (high + low) // 2 # floor
-        if mini <= states[mid]['date'] <= maxi:
-            return (around(states, mid, -1), states[mid]['state'], around(states, mid, 1)) 
-        elif states[mid]['date'] > maxi:
+        if mini <= states[mid].d <= maxi:
+            return (around(states, mid, -1), states[mid].s, around(states, mid, 1)) 
+        elif states[mid].d > maxi:
             return statesAroundDateBinarySearch(states, low, mid - 1, mini, maxi)
         else:
             return statesAroundDateBinarySearch(states, mid + 1, high, mini, maxi)
@@ -137,7 +143,7 @@ def visibilityAroundEarth(body, latitude, longitude,
 
 def issVisibilityAroundEarth(latitude, longitude, ticks, pole = -1):
     visibilities = {}    
-    for i in range(0, ticks) : visibilities[i] = off
+    for i in range(0, ticks) : visibilities[i] = visibility.off
     try :
         (latISS, lonISS) = downloadISSAPI()
         delta = 360 / ticks / 2
@@ -146,7 +152,7 @@ def issVisibilityAroundEarth(latitude, longitude, ticks, pole = -1):
             precedente = capLongitude(int(actuelle - delta))
             suivante = capLongitude(int(actuelle + delta))
             if isBetweenLongitudes(float(lonISS), precedente, suivante) :
-                visibilities[i] = maxi 
+                visibilities[i] = visibility.maxi
     except Exception as e :
         print ('Erreur ISS')
     return visibilities
