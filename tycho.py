@@ -53,11 +53,14 @@ def printLongitudesPoleWise(nbTicks, longitude, pole = -1) :
     print()
 
 def downloadISSAPI():
-    url = 'http://api.open-notify.org/iss-now.json'
+    #url = 'http://api.open-notify.org/iss-now.json'
+    url = 'https://api.wheretheiss.at/v1/satellites/25544'
     response = requests.get(url)
     params = json.loads(response.text)
-    lat = params['iss_position']['latitude']
-    lon = params['iss_position']['longitude']
+    #lat = params['iss_position']['latitude']
+    #lon = params['iss_position']['longitude']
+    lat = params['latitude']
+    lon = params['longitude']
     return (lat, lon)    
 
 def determineVisibilityFromStatesAroundDate(lastState, currentState, nextState) :
