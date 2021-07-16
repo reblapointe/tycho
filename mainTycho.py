@@ -89,7 +89,7 @@ def printRGBBlock(r, g, b):
           str(r) + ';' + str(g) + ';' + str(b) +
           'm\u25a0\033[0m', end = '')
 
-def writeStateOfLights(date = datetime.datetime.now()) :
+def writeStateOfLights(date) :
     print(date.strftime('%Y-%m-%d %H:%M'))
     nameWidth = 1    
     for b in params['bodies'] :
@@ -149,7 +149,7 @@ def loop() :
                     longitude = params['longitude'],
                     ticks = params['nbLeds'],
                     pole = params['standingOnPole'])
-        writeStateOfLights()
+        writeStateOfLights(datetime.datetime.now())
         publish(params['led_topic'], buildLEDRing())
         publish(params['json_topic'], json.dumps(params['bodies']))
         time.sleep(params['secondsBetweenRefresh'])
