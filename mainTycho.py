@@ -159,12 +159,13 @@ def setup() :
     initParams()
     initMQTT()
 
-def demo() :
+def demo() : # une annee
     print('DEMO')
-    d = datetime.datetime.utcnow().replace(day = 1, hour = 0, minute = 0, second = 0)
-    nextMonth = d.replace(day = 28) + datetime.timedelta(days = 4)
-    nbDays = (nextMonth - datetime.timedelta(days = nextMonth.day)).day
-    for i in range(0,  (nbDays - 1) * 24 - 1) :
+    d = datetime.datetime.utcnow().replace(
+        month = 1, day = 1, hour = 0, minute = 0, second = 0)
+    fin = datetime.datetime.utcnow().replace(
+        month = 12, day = 31, hour = 23, minute = 59, second = 59)
+    while(d < fin) :
         d = d + datetime.timedelta(hours = 1)
         for b in params['bodies'] :
             if 'horizonNumber' in b.keys() :
@@ -175,7 +176,7 @@ def demo() :
                     ticks = params['nbLeds'],
                     date = d,
                     pole = params['standingOnPole'])
-        os.system('clear')
+        #os.system('clear')
         print('UTC ', end = '')
         writeStateOfLights(d)
         time.sleep(0.015)

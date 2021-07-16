@@ -16,6 +16,7 @@ class RTSTime :
 
 # list of RTSTimes for body at latitude longitude
 rts = {}
+loadedMonth = 0
 
 def horizonFileName(body, latitude, longitude, date):
     return ('horizonFiles/body' + str(body) +
@@ -28,7 +29,7 @@ def deleteOldHorizonFiles(date) :
         try :
             dateFile = datetime.datetime.strptime(f[len(f)-11:len(f)-4], '%Y-%m')
             # ends with 2021-06.txt
-            if dateFile < (date - relativedelta(months=+2)) :
+            if dateFile < (date - relativedelta(months=+12)) :
                 os.remove(f)
                 print(f + ' deleted')
         except Exception as e :
@@ -66,40 +67,53 @@ def downloadISSAPI():
 def determineVisibilityFromStatesAroundDate(lastState, currentState, nextState) :
     v = visibility.off
     if lastState != '' :
-        if lastState == horizonJPLLoader.transits or lastState == horizonJPLLoader.rises :
+        if (lastState == horizonJPLLoader.transits or
+            lastState == horizonJPLLoader.rises) :
             v = visibility.on
-    if currentState == horizonJPLLoader.rises or currentState == horizonJPLLoader.sets  :
+    if (currentState == horizonJPLLoader.rises or
+        currentState == horizonJPLLoader.sets)  :
         v = visibility.on
     elif currentState == horizonJPLLoader.transits:
         v = visibility.maxi
     elif (currentState == '' and lastState == '' and
-        (nextState == horizonJPLLoader.transits or nextState == horizonJPLLoader.sets)) :
+        (nextState == horizonJPLLoader.transits or
+         nextState == horizonJPLLoader.sets)) :
         v = visibility.on
     return v
 
 def loadRTSIfNotAlreadyLoaded(body, latitude, longitude, date) :
     global rts
+    global loadedMonth
+    if loadedMonth != date.month :
+        rts = {}
+        loadedMonth = date.month
+        deleteOldHorizonFiles(datetime.datetime.now())
+        
     if body not in rts :
         rts[body] = {}
         
-    if (longitude not in rts[body] or
-        (rts[body][longitude][0].d.month != date.month)) :
-        
+    if (longitude not in rts[body]) :
         rts[body][longitude] = {}
+    
         fileName = horizonFileName(body,
                                    latitude = latitude, longitude = longitude,
                                    date = date)
         while not os.path.exists(fileName) :
             horizonJPLLoader.downloadHorizonFile(body,
-                                                 latitude = latitude, longitude = longitude,
+                                                 latitude = latitude,
+                                                 longitude = longitude,
                                                  date = date,
                                                  fileName = fileName)
-            deleteOldHorizonFiles(datetime.datetime.now())
             
         with open(horizonFileName(body, latitude, longitude, date)) as f :
-            for num, line in enumerate(f) :
-                rts[body][longitude][num] = RTSTime(horizonJPLLoader.readHorizonDateTime(line[1:18]), line[20])
-
+            try :
+                for num, line in enumerate(f) :
+                    rts[body][longitude][num] = RTSTime(
+                        horizonJPLLoader.readHorizonDateTime(line[1:18]),
+                        line[20])
+            except Exception as e:
+                print(e)
+                
 def around(states, i, step) :
     last = ''
     if (i + step in states) :
@@ -107,14 +121,18 @@ def around(states, i, step) :
     return last
 
 def statesAroundDateBinarySearch(states, low, high, mini, maxi) :
-    if high >= low:
-        mid = (high + low) // 2 # floor
+    mid = (high + low) // 2 # floor
+    if high >= low and mid in states:
         if mini <= states[mid].d <= maxi:
-            return (around(states, mid, -1), states[mid].s, around(states, mid, 1)) 
+            return (around(states, mid, -1),
+                    states[mid].s,
+                    around(states, mid, 1)) 
         elif states[mid].d > maxi:
-            return statesAroundDateBinarySearch(states, low, mid - 1, mini, maxi)
+            return statesAroundDateBinarySearch(states,
+                                                low, mid - 1, mini, maxi)
         else:
-            return statesAroundDateBinarySearch(states, mid + 1, high, mini, maxi)
+            return statesAroundDateBinarySearch(states,
+                                                mid + 1, high, mini, maxi)
     else:
         return (around(states, low, -1), '', around(states, high, 1))
     

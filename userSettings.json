@@ -1,7 +1,7 @@
 {
-    "latitude" : 48,
-    "longitude" : -71,
-    "nbLeds" : 60,
+    "latitude" : 76,
+    "longitude" : -83,
+    "nbLeds" : 24,
     "mqtt_ip" : "192.168.1.100",
     "mqtt_port" : 1883,
     "brightness" : 10,
@@ -90,7 +90,6 @@
 	},
 	{
 	    "name" : "ISS",
-	    "apiURL" : "http://api.open-notify.org/iss-now.json",
 	    "scope" : 1,
 	    "r" : 0,
 	    "g" : 255,
