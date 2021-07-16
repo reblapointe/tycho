@@ -11,8 +11,8 @@
 #
 # RUN
 #    python3 mainTycho.py
-#    or (no hangup)
-#    python3 mainTycho.py
+#    or (no hangup, no buffering to output file)
+#    nohup python3 -u mainTycho.py &
 
 # START MQTT BROKER
 #     mosquitto -d
