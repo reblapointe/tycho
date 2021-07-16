@@ -163,8 +163,7 @@ def demo() : # une annee
     print('DEMO')
     d = datetime.datetime.utcnow().replace(
         month = 1, day = 1, hour = 0, minute = 0, second = 0)
-    fin = datetime.datetime.utcnow().replace(
-        month = 12, day = 31, hour = 23, minute = 59, second = 59)
+    fin = d.replace(month = 12, day = 31, hour = 23)
     while(d < fin) :
         d = d + datetime.timedelta(hours = 1)
         for b in params['bodies'] :
