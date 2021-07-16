@@ -175,7 +175,7 @@ def demo() : # une annee
                     ticks = params['nbLeds'],
                     date = d,
                     pole = params['standingOnPole'])
-        #os.system('clear')
+        os.system('clear')
         print('UTC ', end = '')
         writeStateOfLights(d)
         time.sleep(0.015)
