@@ -1,7 +1,7 @@
 {
-    "latitude" : 76,
-    "longitude" : -83,
-    "nbLeds" : 24,
+    "latitude" : 48,
+    "longitude" : -71,
+    "nbLeds" : 60,
     "mqtt_ip" : "192.168.1.100",
     "mqtt_port" : 1883,
     "brightness" : 10,

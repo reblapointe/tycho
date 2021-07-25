@@ -3,19 +3,14 @@ from dateutil.relativedelta import relativedelta
 
 # all time in UTC
 
-class visibility:
-    maxi = 2
-    off = 0
-    on = 1
-
 # Rise Transit and Set times
 class RTSTime :
     def __init__(self, d, s) :
         self.d = d
         self.s = s
 
-# list of RTSTimes for body at latitude longitude
-rts = {}
+# list of RTSTimes for body at longitude
+rts = {} # rts[body][longitude]
 loadedMonth = 0
 
 def horizonFileName(body, latitude, longitude, date):
@@ -65,20 +60,20 @@ def downloadISSAPI():
     return (lat, lon)    
 
 def determineVisibilityFromStatesAroundDate(lastState, currentState, nextState) :
-    v = visibility.off
+    v = 0
     if lastState != '' :
         if (lastState == horizonJPLLoader.transits or
             lastState == horizonJPLLoader.rises) :
-            v = visibility.on
+            v = 0.2
     if (currentState == horizonJPLLoader.rises or
         currentState == horizonJPLLoader.sets)  :
-        v = visibility.on
+        v = 0.2
     elif currentState == horizonJPLLoader.transits:
-        v = visibility.maxi
+        v = 1
     elif (currentState == '' and lastState == '' and
         (nextState == horizonJPLLoader.transits or
          nextState == horizonJPLLoader.sets)) :
-        v = visibility.on
+        v = 0.2
     return v
 
 def loadRTSIfNotAlreadyLoaded(body, latitude, longitude, date) :
@@ -92,7 +87,7 @@ def loadRTSIfNotAlreadyLoaded(body, latitude, longitude, date) :
     if body not in rts :
         rts[body] = {}
         
-    if (longitude not in rts[body]) :
+    if longitude not in rts[body] :
         rts[body][longitude] = {}
     
         fileName = horizonFileName(body,
@@ -116,7 +111,7 @@ def loadRTSIfNotAlreadyLoaded(body, latitude, longitude, date) :
                 
 def around(states, i, step) :
     last = ''
-    if (i + step in states) :
+    if i + step in states :
         last = states[i + step].s
     return last
 
@@ -164,7 +159,7 @@ def visibilityAroundEarth(body, latitude, longitude,
 
 def issVisibilityAroundEarth(latitude, longitude, ticks, pole = -1):
     visibilities = {}    
-    for i in range(0, ticks) : visibilities[i] = visibility.off
+    for i in range(0, ticks) : visibilities[i] = 0
     try :
         (latISS, lonISS) = downloadISSAPI()
         delta = 360 / ticks / 2
@@ -173,7 +168,9 @@ def issVisibilityAroundEarth(latitude, longitude, ticks, pole = -1):
             precedente = capLongitude(int(actuelle - delta))
             suivante = capLongitude(int(actuelle + delta))
             if isBetweenLongitudes(float(lonISS), precedente, suivante) :
-                visibilities[i] = visibility.maxi
+                ratio = (180 - abs(latISS - latitude)) / 180
+                visibilities[i] = ratio
+                print(str(latISS) + '  ' + str(ratio))
     except Exception as e :
         print ('Erreur ISS')
     return visibilities

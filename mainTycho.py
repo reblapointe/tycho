@@ -99,10 +99,10 @@ def writeStateOfLights(date) :
     for b in params['bodies'] :
         print((b['name'] + ' : |').rjust(nameWidth + len(' : |')), end = '')
         for l in range(0, params['nbLeds']) :
-            if b['led'][l] == tycho.visibility.maxi :
-                printRGBBlock(b['r'], b['g'], b['b'])
-            elif b['led'][l] == tycho.visibility.on:
-                printRGBBlock(b['r'] / 2, b['g'] / 2, b['b'] / 2)
+            if b['led'][l] > 0 :
+                printRGBBlock(b['led'][l] * b['r'],
+                              b['led'][l] * b['g'],
+                              b['led'][l] * b['b'])
             else :
                 print(' ', end = '') 
         print('|')
@@ -115,17 +115,18 @@ def buildLEDRing() :
         g = 0
         b = 0
         for body in params['bodies'] :
-            if (body['scope'] == 2 and body['led'][i] == 1) :
-                r += (body['r'] / 5) % 256
-                g += (body['g'] / 5) % 256
-                b += (body['b'] / 5) % 256
+            if (body['scope'] == 2 and 0 < body['led'][i] < 1) :
+                r = int(r + body['led'][i] * body['r']) % 256
+                g = int(g + body['led'][i] * body['g']) % 256
+                b = int(b + body['led'][i] * body['b']) % 256
     
         for body in params['bodies'] :
-            if (body['led'][i] == 2) :
+            if (body['scope'] != 0 and body['led'][i] == 1) :
                 r = body['r']
                 g = body['g']
                 b = body['b']
         strip += str(int(r * dim)) + ' ' + str(int(g * dim)) + ' ' + str(int(b * dim)) + ' '
+    print(strip)
     return strip
 
 def loop() :
