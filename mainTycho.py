@@ -124,9 +124,8 @@ def buildLEDRing() :
             if (body['scope'] != 0 and body['led'][i] == 1) :
                 r = body['r']
                 g = body['g']
-                b = body['b']
+                b = body['b']   
         strip += str(int(r * dim)) + ' ' + str(int(g * dim)) + ' ' + str(int(b * dim)) + ' '
-    print(strip)
     return strip
 
 def loop() :

@@ -4,7 +4,7 @@
     "nbLeds" : 60,
     "mqtt_ip" : "192.168.1.100",
     "mqtt_port" : 1883,
-    "brightness" : 10,
+    "brightness" : 5,
     "standingOnPole" : "north",
     "secondsBetweenRefresh" : 60,
     "bodies" : [
@@ -90,7 +90,7 @@
 	},
 	{
 	    "name" : "ISS",
-	    "scope" : 1,
+	    "scope" : 2,
 	    "r" : 0,
 	    "g" : 255,
 	    "b" : 0
