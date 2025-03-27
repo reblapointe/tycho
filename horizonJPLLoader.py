@@ -43,7 +43,7 @@ def downloadHorizonFile(body, latitude, longitude, date, fileName):
            'R_T_S_ONLY=\'TVH\'')
     print(url)
     try :
-        response = requests.get(url)
+        response = requests.get(url, verify=False)
         lines = response.text.split('\n')
         f = open(fileName, 'w')        
         began = False
@@ -57,4 +57,4 @@ def downloadHorizonFile(body, latitude, longitude, date, fileName):
             if read:
                 f.write(line + '\n')
     except Exception as e :
-        print ('Erreur JPL Horizon')
+        print (f'Erreur JPL Horizon : {e}')

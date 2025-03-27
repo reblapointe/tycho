@@ -1,5 +1,6 @@
 __pycache__/
-horizonFiles/
+horizonFiles/*
+!horizonFiles/.gitkeep
 sketch_LedRing/wifiParams.h
 sketch_LedRing/private/*
 *~
